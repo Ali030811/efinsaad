@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EF INSAAT - Kataloq</title>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #f0f2f5;
+  min-height: 100vh;
+  color: #333;
+  overflow-x: hidden;
+}
+
+#backBtn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  padding: 10px 16px;
+  background: #fff;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#backBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#home {
+  text-align: center;
+  padding: 100px 20px;
+  background: linear-gradient(135deg, #1f3c88 0%, #6a1b9a 100%);
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#home h1 {
+  font-size: 52px;
+  margin-bottom: 20px;
+  font-weight: 800;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.home-btn {
+  padding: 16px 40px;
+  font-size: 16px;
+  border: none;
+  background: #fff;
+  color: #1f3c88;
+  border-radius: 30px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.home-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+#catalog {
+  padding: 70px 15px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  display: none;
+}
+
+#catalog.active {
+  display: block;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#searchInput {
+  width: 100%;
+  padding: 15px 20px;
+  margin: 15px 0;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+#searchInput:focus {
+  outline: none;
+  border-color: #1f3c88;
+  box-shadow: 0 4px 15px rgba(31, 60, 136, 0.15);
+}
+
+.categories-wrapper {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.categories {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 5px;
+  gap: 10px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.categories::-webkit-scrollbar {
+  display: none;
+}
+
+.categories button {
+  padding: 12px 24px;
+  border: none;
+  background: #fff;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  font-size: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.categories button:hover:not(.active) {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.categories button.active {
+  background: linear-gradient(135deg, #1f3c88 0%, #6a1b9a 100%);
+  color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(31, 60, 136, 0.4);
+  font-weight: 700;
+}
+
+.categories button.active::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+}
+
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #1f3c88;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.categories-wrapper:hover .scroll-arrow {
+  opacity: 1;
+}
+
+.scroll-arrow.left { left: -10px; }
+.scroll-arrow.right { right: -10px; }
+
+#products {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ОБЫЧНОЕ СОСТОЯНИЕ - горизонтально */
+.product {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  animation: fadeUp 0.4s ease both;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  will-change: transform;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.product:hover {
+  transform: scale(1.02);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.product-image {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  transition: all 0.4s ease;
+  border: 2px solid #e0e0e0;
+}
+
+.product-info {
+  margin-left: 15px;
+  flex: 1;
+  min-width: 0;
+  transition: all 0.4s ease;
+}
+
+.product-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 6px;
+  transition: all 0.4s ease;
+}
+
+.product-desc {
+  color: #718096;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  transition: all 0.4s ease;
+}
+
+/* УВЕЛИЧЕННОЕ СОСТОЯНИЕ - вертикально */
+.product.expanded {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 25px;
+  transform: scale(1.05);
+  box-shadow: 0 15px 40px rgba(31, 60, 136, 0.25);
+  border-color: #1f3c88;
+  z-index: 10;
+  background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+}
+
+.product.expanded .product-image {
+  width: 200px;
+  height: 200px;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  border: 3px solid #1f3c88;
+  cursor: zoom-in;
+}
+
+.product.expanded .product-info {
+  margin-left: 0;
+  width: 100%;
+}
+
+.product.expanded .product-name {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: #1f3c88;
+}
+
+.product.expanded .product-desc {
+  font-size: 16px;
+  -webkit-line-clamp: unset;
+  display: block;
+  color: #555;
+  line-height: 1.6;
+}
+
+#imageModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.95);
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#imageModal.active {
+  display: flex;
+  opacity: 1;
+}
+
+#modalImg {
+  max-width: 95%;
+  max-height: 95%;
+  border-radius: 12px;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+#imageModal.active #modalImg {
+  transform: scale(1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255,255,255,0.2);
+  transform: rotate(90deg);
+}
+
+.loading-trigger {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-size: 14px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #ddd;
+  border-top-color: #1f3c88;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+footer {
+  text-align: center;
+  padding: 40px 20px 60px;
+  color: #888;
+  font-size: 14px;
+  position: relative;
+}
+
+#adminButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #1f3c88 0%, #6a1b9a 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 1500;
+}
+
+#adminButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+
+.hidden { display: none !important; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  #home h1 { font-size: 36px; }
+  .product-image { width: 75px; height: 75px; }
+  .product-name { font-size: 16px; }
+  .categories button { padding: 10px 18px; font-size: 13px; }
+  #adminButton { width: 48px; height: 48px; font-size: 20px; bottom: 15px; right: 15px; }
+  
+  .product.expanded .product-image {
+    width: 150px;
+    height: 150px;
+  }
+  .product.expanded .product-name {
+    font-size: 20px;
+  }
+}
+
+/* ADMIN PANEL */
+#adminModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 3000;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+#adminModal.active {
+  display: flex;
+}
+
+.admin-container {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 1000px;
+  max-height: 95vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+}
+
+.admin-header {
+  background: linear-gradient(135deg, #1f3c88 0%, #6a1b9a 100%);
+  color: #fff;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.admin-close:hover {
+  background: rgba(255,255,255,0.3);
+  transform: rotate(90deg);
+}
+
+.admin-body {
+  padding: 25px;
+  overflow-y: auto;
+  flex: 1;
+  background: #f8f9fa;
+}
+
+.login-form {
+  max-width: 400px;
+  margin: 60px auto;
+  text-align: center;
+  background: #fff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+.login-form h3 {
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 16px;
+  margin: 12px 0;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.3s;
+  background: #fafafa;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #1f3c88;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(31, 60, 136, 0.1);
+}
+
+.login-form button {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #1f3c88 0%, #6a1b9a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(31, 60, 136, 0.3);
+}
+
+.login-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(31, 60, 136, 0.4);
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 25px;
+  background: #fff;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.admin-tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.admin-tab:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.admin-tab.active {
+  background: linear-gradient(135deg, #1f3c88 0%, #6a1b9a 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(31, 60, 136, 0.3);
+}
+
+.admin-filter {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-filter label {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+
+.admin-filter select {
+  padding: 10px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+  min-width: 200px;
+  transition: all 0.3s;
+}
+
+.admin-filter select:focus {
+  outline: none;
+  border-color: #1f3c88;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-item {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 2px solid transparent;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.admin-item:hover {
+  border-color: #1f3c88;
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.admin-item-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 2px solid #e0e0e0;
+  background: #f0f0f0;
+}
+
+.admin-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-item-name {
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.admin-item-cat {
+  font-size: 12px;
+  color: #1f3c88;
+  font-weight: 600;
+  background: rgba(31, 60, 136, 0.1);
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 4px;
+}
+
+.admin-item-desc {
+  font-size: 13px;
+  color: #718096;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.admin-btn-edit {
+  background: #ffc107;
+  color: #333;
+}
+
+.admin-btn-edit:hover {
+  background: #ffb300;
+  transform: translateY(-1px);
+}
+
+.admin-btn-delete {
+  background: #dc3545;
+  color: #fff;
+}
+
+.admin-btn-delete:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.admin-btn-save {
+  background: #28a745;
+  color: #fff;
+}
+
+.admin-btn-save:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.admin-btn-cancel {
+  background: #6c757d;
+  color: #fff;
+}
+
+.admin-btn-cancel:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+.admin-add-btn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px dashed #1f3c88;
+  border-radius: 12px;
+  color: #1f3c88;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 25px;
+  transition: all 0.3s;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-add-btn:hover {
+  background: linear-gradient(135deg, #1f3c88 0%, #6a1b9a 100%);
+  color: #fff;
+  border-style: solid;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(31, 60, 136, 0.3);
+}
+
+.admin-edit-form {
+  background: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  border: 2px solid #1f3c88;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.admin-edit-form h4 {
+  margin-bottom: 25px;
+  color: #1f3c88;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-edit-form input,
+.admin-edit-form select,
+.admin-edit-form textarea {
+  width: 100%;
+  padding: 14px;
+  margin: 10px 0;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: all 0.3s;
+  background: #fafafa;
+}
+
+.admin-edit-form input:focus,
+.admin-edit-form select:focus,
+.admin-edit-form textarea:focus {
+  outline: none;
+  border-color: #1f3c88;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(31, 60, 136, 0.1);
+}
+
+.admin-edit-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.admin-edit-form label {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+.admin-edit-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.cat-manager {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.cat-item {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.cat-item:hover {
+  border-color: #1f3c88;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.cat-item input {
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  color: #333;
+  width: 100%;
+  padding: 8px;
+  font-size: 15px;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.cat-item input:focus {
+  outline: 2px solid #1f3c88;
+  background: #f8f9fa;
+}
+
+.delete-code-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  z-index: 4000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.delete-code-modal.active {
+  display: flex;
+}
+
+.delete-code-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 16px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.delete-code-box h3 {
+  color: #dc3545;
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+.delete-code-box p {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 15px;
+}
+
+.delete-code-box input {
+  width: 100%;
+  padding: 16px;
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: 8px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.delete-code-box input:focus {
+  outline: none;
+  border-color: #dc3545;
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    max-height: 100vh;
+    border-radius: 0;
+    max-width: 100%;
+  }
+  .admin-body { padding: 15px; }
+  .admin-tabs { flex-wrap: wrap; }
+  .admin-tab {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px;
+    font-size: 13px;
+  }
+  .admin-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .admin-item-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .cat-manager { grid-template-columns: 1fr; }
+  .admin-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .admin-filter select { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<button id="backBtn" class="hidden" onclick="goBack()">← Geri</button>
+
+<div id="imageModal" onclick="closeModal()">
+  <button class="modal-close" onclick="event.stopPropagation(); closeModal()">×</button>
+  <img id="modalImg">
+</div>
+
+<div id="deleteCodeModal" class="delete-code-modal">
+  <div class="delete-code-box">
+    <h3>⚠️ Təhlükəli Əməliyyat</h3>
+    <p>Məhsulu silmək üçün təhlükəsizlik kodunu daxil edin:</p>
+    <input type="password" id="deleteCodeInput" placeholder="••••" maxlength="4">
+    <div>
+      <button class="admin-btn admin-btn-cancel" onclick="cancelDelete()">Ləğv et</button>
+      <button class="admin-btn admin-btn-delete" onclick="confirmDelete()">Təsdiqlə</button>
+    </div>
+  </div>
+</div>
+
+<div id="adminModal">
+  <div class="admin-container">
+    <div class="admin-header">
+      <h2>🔐 Admin Panel</h2>
+      <button class="admin-close" onclick="closeAdmin()">×</button>
+    </div>
+    <div class="admin-body" id="adminBody"></div>
+  </div>
+</div>
+
+<div id="home">
+  <h1>EF INSAAT</h1>
+  <button class="home-btn" onclick="openCatalog()">Kataloq</button>
+</div>
+
+<div id="catalog">
+  <input type="text" id="searchInput" oninput="debounceSearch()" placeholder="Məhsul axtar...">
+  <div class="categories-wrapper">
+    <button class="scroll-arrow left" onclick="scrollCategories(-1)">‹</button>
+    <div class="categories" id="catList"></div>
+    <button class="scroll-arrow right" onclick="scrollCategories(1)">›</button>
+  </div>
+  <div id="products"></div>
+  <div id="loadingTrigger" class="loading-trigger hidden">
+    <span class="spinner"></span> Yüklənir...
+  </div>
+</div>
+
+<footer>EF INSAAT ©️ 2026</footer>
+
+<button id="adminButton" onclick="openAdmin()" title="Admin Panel">⚙️</button>
+
+<script>
+// ==================== DATA ====================
+const defaultProducts = [
+  {id:10,cat:5,name:"SHESTIQRANNIK ULDUZ",desc:"BALACA / ORTA / YEKE ",img:"https://i.imgur.com/FYdEdP4.jpeg"},
+  {id:22,cat:5,name:"SHESTIQRANNIK KVADRAT",desc:"BALACA / ORTA / YEKE ",img:"https://i.imgur.com/m67DSYV.jpeg"},
+  {id:11,cat:5,name:"RAZVADNOY",desc:"N8 / N10 / N12",img:"https://i.imgur.com/7cFg3VT.jpeg"},
+  {id:12,cat:5,name:"QAZ ACARI SARI",desc:"N1 / N1.5",img:"https://i.imgur.com/the6U6i.jpeg"},
+  {id:13,cat:5,name:"QAZ ACARI KONON",desc:"N1 / N1.5 / N2",img:"https://i.imgur.com/yBRX9lr.jpeg"},
+  {id:14,cat:5,name:"QAZ ACARI QIRMIZI",desc:"N1 / N1.5",img:"https://i.imgur.com/PEaDMMC.jpeg"},
+  {id:15,cat:5,name:"KROKODIL KNOPKA",desc:"N8",img:"https://i.imgur.com/FWp3eA1.jpeg"},
+  {id:16,cat:5,name:"KROKODIL QARA",desc:"N8 / N10 / N12",img:"https://i.imgur.com/wnJ5B6o.jpeg"},
+  {id:17,cat:5,name:"KROKODIL ORIENT",desc:"N10 / N12",img:"https://i.imgur.com/5k5Awbj.jpeg"},
+  {id:18,cat:5,name:"KLES KONON",desc:"N10 / N12",img:"https://i.imgur.com/ByjSFup.jpeg"},
+  {id:19,cat:5,name:"KROKODIL KONON",desc:"N10 / N12",img:"https://i.imgur.com/EDdaqRF.jpeg"},
+  {id:20,cat:5,name:"KERPETIN PLIERS",desc:"N6 / N8",img:"https://i.imgur.com/pvO08vX.jpeg"},
+  {id:21,cat:5,name:"KUSACKA BEBONA",desc:"N6 / N8",img:"https://i.imgur.com/Nzhoneq.jpeg"},
+  {id:23,cat:5,name:"KERPETIN BEBONA",desc:"N6 / N7 / N8",img:"https://i.imgur.com/wuE1pVY.jpeg"},
+  {id:24,cat:5,name:"KERPETIN KOLCA",desc:" EYRI / DUZ",img:"https://i.imgur.com/3StS1aE.jpeg"},
+  {id:25,cat:5,name:"UTKANOS",desc:"N6",img:"https://i.imgur.com/ecukAyR.jpeg"},
+  {id:26,cat:5,name:"ATVERKA ZWEI",desc:"",img:"https://i.imgur.com/Oq8Hqt1.jpeg"},
+  {id:27,cat:5,name:"ATVERKA USA",desc:"",img:"https://i.imgur.com/vLr0i31.jpeg"},
+  {id:28,cat:5,name:"ATVERKA RENGLI",desc:"N2 / N3 / N4",img:"https://i.imgur.com/2r20CJE.jpeg"},
+  {id:29,cat:5,name:"ATVERKA QARA VAKUM",desc:"",img:"https://i.imgur.com/aRcw9LN.jpeg"},
+  {id:30,cat:5,name:"ATVERKA KLETCATKALI",desc:"",img:"https://i.imgur.com/o1iTYpY.jpeg"},
+  {id:31,cat:5,name:"ATVERKA TOPPUS",desc:"",img:"https://i.imgur.com/XayCBZY.jpeg"},
+  {id:32,cat:5,name:"ACAR KOMBI",desc:"N8 / N10 / N13 / N17 / N19",img:"https://i.imgur.com/2TnMZws.jpeg"},
+  {id:51,cat:6,name:"ZAJIM",desc:"AG / QARA",img:"https://i.imgur.com/FGfJnCR.jpeg"},
+  {id:33,cat:6,name:"BOLT PILLEKEN",desc:"",img:"https://i.imgur.com/Kbaw1yV.jpeg"},
+  {id:34,cat:6,name:"ARABA BOLTU",desc:"",img:"https://i.imgur.com/Dbv4LwJ.jpeg"},
+  {id:35,cat:6,name:"MEBEL BOLT",desc:"",img:"https://i.imgur.com/GKw7DGx.jpeg"},
+  {id:36,cat:6,name:"MEBEL BOLT",desc:"",img:"https://i.imgur.com/IAZiN3X.jpeg"},
+  {id:37,cat:6,name:"MEBEL BOLT",desc:"",img:"https://i.imgur.com/hFmDgLz.jpeg"},
+  {id:38,cat:6,name:"BOLT",desc:"",img:"https://i.imgur.com/sWvoXZA.jpeg"},
+  {id:39,cat:6,name:"BOLT",desc:"",img:"https://i.imgur.com/PeYTFxR.jpeg"},
+  {id:40,cat:6,name:"BOLT",desc:"",img:"https://i.imgur.com/fT6Jrez.jpeg"},
+  {id:41,cat:6,name:"SHAYBA",desc:"",img:"https://i.imgur.com/Aqzo2s6.jpeg"},
+  {id:42,cat:6,name:"SHAYBA",desc:"",img:"https://i.imgur.com/Z3385Lf.jpeg"},
+  {id:43,cat:6,name:"BOLT",desc:"",img:"https://i.imgur.com/a9p51Bm.jpeg"},
+  {id:44,cat:6,name:"ANKER BOLT",desc:"",img:"https://i.imgur.com/Ie7WjPP.jpeg"},
+  {id:45,cat:6,name:"SAYBA PRUJIN",desc:"",img:"https://i.imgur.com/egKFc79.jpeg"},
+  {id:46,cat:6,name:"QAYKA REZIN",desc:"",img:"https://i.imgur.com/qZ2rAPI.jpeg"},
+  {id:47,cat:6,name:"SPILKA",desc:"1M",img:"https://i.imgur.com/oQRXJs0.jpeg"},
+  {id:48,cat:6,name:"QAYKA",desc:"",img:"https://i.imgur.com/z5JobAx.jpeg"},
+  {id:49,cat:6,name:"ANKER",desc:"",img:"https://i.imgur.com/rDV3Ye6.jpeg"},
+  {id:50,cat:6,name:"SPILKA",desc:"2M",img:"https://i.imgur.com/m9OWJAL.jpeg"},
+  {id:52,cat:7,name:"LONG ROAD",desc:"115MM  KESEN",img:"https://i.imgur.com/Mj57qke.jpeg"},
+  {id:53,cat:7,name:"LONG ROAD",desc:"115MM  YONAN",img:"https://i.imgur.com/jm22JCd.jpeg"},
+  {id:54,cat:7,name:"KITSIBO",desc:"115MM KAFEL KESEN",img:"https://i.imgur.com/mvpcvFp.jpeg"},
+  {id:55,cat:7,name:"ZWEI QARA 115",desc:"KAFEL KESEN",img:"https://i.imgur.com/8ssMUg6.jpeg"},
+  {id:56,cat:7,name:"DISK PRO-Ð¡UD",desc:"115 / 180 / 230 ",img:"https://i.imgur.com/r6PIXbu.jpeg"},
+  {id:57,cat:7,name:"DISK FRT",desc:"115 / 180 / 230",img:"https://i.imgur.com/GmGCJyw.jpeg"},
+  {id:58,cat:7,name:"ZWEI 115",desc:"",img:"https://i.imgur.com/Ex0wqbK.jpeg"},
+  {id:59,cat:7,name:"DAS LUGA",desc:"115*1 / 115*2 / 115",img:"https://i.imgur.com/rlpB2BF.jpeg"},
+  {id:60,cat:7,name:"DAS Ð¡ONAN",desc:"115 / 180 / 230",img:"https://i.imgur.com/mioRTRa.jpeg"},
+  {id:61,cat:7,name:"ATAKA ZWEI 115",desc:"",img:"https://i.imgur.com/wdfLnj1.jpeg"},
+  {id:62,cat:7,name:"ATAKA ",desc:"115*40 / 180*40 / 180*60 / 230*40 / 230*60 / 250*60 / 300*60 / 300*40",img:"https://i.imgur.com/chEnSEr.jpeg"},
+  {id:758,cat:7,name:"ZWEI 115 SARI",desc:"KAFEL KESEN",img:"https://i.imgur.com/mRgKTgm.jpeg"},
+  {id:759,cat:7,name:"DISK ZWEI 115*1.0",desc:"",img:"https://i.imgur.com/Nyu5Lga.jpeg"},
+  {id:760,cat:7,name:"ZWEI 115 AG",desc:"KAFEL KESEN",img:"https://i.imgur.com/fTXU9mQ.jpeg"},
+  {id:63,cat:8,name:"VILKA MOEIN",desc:"",img:"https://i.imgur.com/F9Qdudk.jpeg"},
+  {id:64,cat:8,name:"ZVONOK SET",desc:"",img:"https://i.imgur.com/8vqmG31.jpeg"},
+  {id:65,cat:8,name:"ZVONOK AG",desc:"TOK",img:"https://i.imgur.com/DNOBSUj.jpeg"},
+  {id:72,cat:8,name:"ZVONOK QARA",desc:"",img:"https://i.imgur.com/jau3b4h.jpeg"},
+  {id:66,cat:8,name:"SONGURU UST",desc:"RAZETKA DERIN",img:"https://i.imgur.com/WPniJFg.jpeg"},
+  {id:67,cat:8,name:"LAMPA AG",desc:"9W / 12W / 15W / 18W / 30W / 40W",img:"https://i.imgur.com/95f6wUv.jpeg"},
+  {id:68,cat:8,name:"LAMPA SARI",desc:"9W / 12W / 15W / 18W / 30W / 40W",img:"https://i.imgur.com/OEmSlac.jpeg"},
+  {id:69,cat:8,name:"ASTELL ANTENNA KABEL",desc:"",img:"https://i.imgur.com/j7P26q0.jpeg"},
+  {id:70,cat:8,name:"XORTUM",desc:"50M / 100M",img:"https://i.imgur.com/qLi4FLl.jpeg"},
+  {id:73,cat:8,name:"VILKA SONGURU",desc:"EYRI / DUZ",img:"https://i.imgur.com/XdMj0UZ.jpeg"},
+  {id:74,cat:8,name:"ZVONOK TEK",desc:"",img:"https://i.imgur.com/7Tg3JSa.jpeg"},
+  {id:75,cat:8,name:"VILKA QARA TUNA",desc:"",img:"https://i.imgur.com/T9NIQTG.jpeg"},
+  {id:76,cat:8,name:"VILKA MAKEL",desc:"EYRI / DUZ",img:"https://i.imgur.com/UScGLB7.jpeg"},
+  {id:77,cat:8,name:"VILKA ELBI",desc:"",img:"https://i.imgur.com/VQR0V5B.jpeg"},
+  {id:78,cat:8,name:"VILKA REZIN",desc:"EYRI / DUZ",img:"https://i.imgur.com/PoRYLvz.jpeg"},
+  {id:79,cat:8,name:"VILKA TUNA AG",desc:"",img:"https://i.imgur.com/ugvlrMj.jpeg"},
+  {id:80,cat:8,name:"VILKA ABEL",desc:"",img:"https://i.imgur.com/x8FnBV1.jpeg"},
+  {id:81,cat:8,name:"VILKA RUS",desc:"",img:"https://i.imgur.com/fcimzwy.jpeg"},
+  {id:82,cat:8,name:"UDLENITEL VIKO",desc:"3M / 5M / 10M",img:"https://i.imgur.com/Ro2jWBt.jpeg"},
+  {id:83,cat:8,name:"POYALNIK TAXTA",desc:"60W / 80W",img:"https://i.imgur.com/O4OYo0F.jpeg"},
+  {id:84,cat:8,name:"TROYNIK MERKAN",desc:"",img:"https://i.imgur.com/BKgNIuN.jpeg"},
+  {id:85,cat:8,name:"UDLENITEL ELBI",desc:"3M / 5M / 10M",img:"https://i.imgur.com/lC6gyG7.jpeg"},
+  {id:86,cat:8,name:"TROYNIK SHAXMAT",desc:"",img:"https://i.imgur.com/jKFRHnm.jpeg"},
+  {id:87,cat:8,name:"TROYNIK QARA EVRO",desc:"",img:"https://i.imgur.com/ciRZgpD.jpeg"},
+  {id:88,cat:8,name:"TROYNIK QARA RUS",desc:"",img:"https://i.imgur.com/4dUJrVq.jpeg"},
+  {id:89,cat:8,name:"SHUNUR TEREZI UCUZ",desc:"",img:"https://i.imgur.com/U6O07EB.jpeg"},
+  {id:90,cat:8,name:"SHUNUR TEREZI ORG",desc:"",img:"https://i.imgur.com/nDxVbLg.jpeg"},
+  {id:91,cat:8,name:"SHUNUR SAC ORG",desc:"",img:"https://i.imgur.com/qcIjvIu.jpeg"},
+  {id:92,cat:8,name:"SHUNUR SAC UCUZ",desc:"",img:"https://i.imgur.com/o0mxlr6.jpeg"},
+  {id:93,cat:8,name:"SONGURU UST",desc:"RAZ 1 / RAZ 2 / VKL 1 / VKL 2",img:"https://i.imgur.com/zs1AjTk.jpeg"},
+  {id:94,cat:8,name:"SKOP",desc:"N4 / N5 / N6 / N7 / N8 / N9 / N10 / N12 / N14 / N16 / N18 / N20 / N25",img:"https://i.imgur.com/JsWEhAh.jpeg"},
+  {id:95,cat:8,name:"QALOVKA 1",desc:"",img:"https://i.imgur.com/jI8nPCS.jpeg"},
+  {id:96,cat:8,name:"PATRON IRAN",desc:"",img:"https://i.imgur.com/HBC5F71.jpeg"},
+  {id:97,cat:8,name:"PERENOSKA LED",desc:"5M / 10M",img:"https://i.imgur.com/y09kRlb.jpeg"},
+  {id:98,cat:8,name:"POYALNIK 60W",desc:"",img:"https://i.imgur.com/RRNzdbL.jpeg"},
+  {id:99,cat:8,name:"PATRON RUS",desc:"",img:"https://i.imgur.com/blZTx4H.jpeg"},
+  {id:100,cat:8,name:"PATRON TUNA",desc:"",img:"https://i.imgur.com/N2PvGFq.jpeg"},
+  {id:101,cat:8,name:"NEM OLCEN",desc:"",img:"https://i.imgur.com/qQMEDrN.jpeg"},
+  {id:102,cat:8,name:"PATRON SUNUR",desc:"",img:"https://i.imgur.com/Pgpbji9.jpeg"},
+  {id:103,cat:8,name:"DUXOVKA VKL",desc:"N1 / N2 / N3",img:"https://i.imgur.com/WMmQivN.jpeg"},
+  {id:104,cat:8,name:"KLIPSAL KRISHKA",desc:"",img:"https://i.imgur.com/f8Ze47j.jpeg"},
+  {id:105,cat:8,name:"KOROBKA ORG",desc:"",img:"https://i.imgur.com/DdZy7yx.jpeg"},
+  {id:106,cat:8,name:"KLIPSAL KOROBKA",desc:"N2",img:"https://i.imgur.com/BJ8DQB0.jpeg"},
+  {id:107,cat:8,name:"KOROBKA DERIN SADE",desc:"",img:"https://i.imgur.com/9di1IXW.jpeg"},
+  {id:108,cat:8,name:"KLIPSAL KOROBKA",desc:"N1",img:"https://i.imgur.com/w0GEZ3Q.jpeg"},
+  {id:109,cat:8,name:"KIPTILNIK",desc:"",img:"https://i.imgur.com/FDlI4IY.jpeg"},
+  {id:110,cat:8,name:"KALOD SONGURU SADE",desc:"N4 / N5 / N6",img:"https://i.imgur.com/ywJg0JH.jpeg"},
+  {id:111,cat:8,name:"KALOD SONGURU VKL",desc:"N4 / N5 / N6",img:"https://i.imgur.com/yUPLXDh.jpeg"},
+  {id:112,cat:8,name:"KALOD ELBI",desc:"",img:"https://i.imgur.com/t08WKoe.jpeg"},
+  {id:113,cat:8,name:"KALOD QARA USTA",desc:"",img:"https://i.imgur.com/y8Xyeka.jpeg"},
+  {id:114,cat:8,name:"KALOD ALTI QOZ",desc:"",img:"https://i.imgur.com/qUpWFlv.jpeg"},
+  {id:115,cat:8,name:"ELBI ALT",desc:"VKL 1 / VKL 2 / RAZ 1 / RAZ DERIN",img:"https://i.imgur.com/zEIrrYI.jpeg"},
+  {id:1100,cat:8,name:"ELBI UST",desc:"VKL 1 / VKL 2 / RAZ 1 / RAZ DERIN",img:"https://i.imgur.com/zEIrrYI.jpeg"},
+  {id:116,cat:8,name:"KALOD ALPIN",desc:"",img:"https://i.imgur.com/fYpykf5.jpeg"},
+  {id:117,cat:8,name:"ELECTRON SHOTCIK",desc:"",img:"https://i.imgur.com/24Q4wdx.jpeg"},
+  {id:118,cat:8,name:"IZOLENT NOVA",desc:"",img:"https://i.imgur.com/eXIkClE.jpeg"},
+  {id:119,cat:8,name:"IZOLENT CIT",desc:"",img:"https://i.imgur.com/Lr6BLDl.jpeg"},
+  {id:120,cat:8,name:"IZOLENT ENLI",desc:"QARA / SERI",img:"https://i.imgur.com/H9xHU3p.jpeg"},
+  {id:121,cat:8,name:"IZOLENT",desc:"QARA 20M / SERI 20M",img:"https://i.imgur.com/jFCiNJd.jpeg"},
+  {id:122,cat:8,name:"DVD UCUZ",desc:"",img:"https://i.imgur.com/ZmDXiRF.jpeg"},
+  {id:123,cat:8,name:"DVD ORGINAL",desc:"",img:"https://i.imgur.com/LGxjC8x.jpeg"},
+  {id:124,cat:8,name:"DISERT",desc:"",img:"https://i.imgur.com/eI3zx24.jpeg"},
+  {id:125,cat:8,name:"DOSPEL",desc:"100 / 120 / 150",img:"https://i.imgur.com/AVAG983.jpeg"},
+  {id:126,cat:8,name:"AVTOMAT RUBILNIK",desc:"2P-32A / 2P-63A / 2P-100A / 3P-63A / 3P-100A",img:"https://i.imgur.com/6sL0es7.jpeg"},
+  {id:127,cat:8,name:"DAS DURACELL MINUTKA",desc:"",img:"https://i.imgur.com/ppnvF3R.jpeg"},
+  {id:128,cat:9,name:"SHOTKU YUMURU",desc:"30 / 35 / 40 / 45 / 50 / 55",img:"https://i.imgur.com/688NMXh.jpeg"},
+  {id:129,cat:9,name:"SHOTKU GEVE",desc:"",img:"https://i.imgur.com/fqmwSwS.jpeg"},
+  {id:130,cat:9,name:"SHOTKU MASIN",desc:"15SM / 17SM / 20SM",img:"https://i.imgur.com/sOV8Hb7.jpeg"},
+  {id:131,cat:9,name:"SHOTKU CUBUQ",desc:"",img:"https://i.imgur.com/WNgl0uI.jpeg"},
+  {id:132,cat:9,name:"KIST RESSAM NABOR",desc:"",img:"https://i.imgur.com/PW3YnEv.jpeg"},
+  {id:133,cat:9,name:"SHOTKU SERD",desc:"15SM / 20SM",img:"https://i.imgur.com/43MXnuj.jpeg"},
+  {id:134,cat:9,name:"ZAPAS BARMAG QUBKA",desc:"",img:"https://i.imgur.com/QsOdrKi.jpeg"},
+  {id:135,cat:9,name:"KATOK STIK",desc:"",img:"https://i.imgur.com/x1WxOyj.jpeg"},
+  {id:136,cat:9,name:"KATOK ZAKAZ BARMAG",desc:"",img:"https://i.imgur.com/YoaoWq0.jpeg"},
+  {id:137,cat:9,name:"KIST",desc:"1 /  1.5 / 2 / 2.5 / 3 / 4",img:"https://i.imgur.com/nPTLelB.jpeg"},
+  {id:138,cat:9,name:"MAXLAVICA PROSTOY",desc:"",img:"https://i.imgur.com/OB1wtkY.jpeg"},
+  {id:139,cat:9,name:"MAXLAVICA",desc:"120SM / 140SM / 150SM / 180SM",img:"https://i.imgur.com/AB9lyD2.jpeg"},
+  {id:140,cat:9,name:"KATTOK BARMAQ KITAY",desc:"",img:"https://i.imgur.com/1bRnTHt.jpeg"},
+  {id:141,cat:9,name:"KATOK TOPPUS",desc:"",img:"https://i.imgur.com/a4Vr1pj.jpeg"},
+  {id:142,cat:9,name:"KATOK TARSOVKA",desc:"IRI / XIRRDA",img:"https://i.imgur.com/jkNLzfq.jpeg"},
+  {id:143,cat:9,name:"KATOK 25SM",desc:"KRASKA / EMULSIYA",img:"https://i.imgur.com/lvvphdc.jpeg"},
+  {id:144,cat:9,name:"KATOK BARMAG TUK",desc:"",img:"https://i.imgur.com/bcvMhL3.jpeg"},
+  {id:145,cat:9,name:"KATOK 20SM",desc:"KRASKA / EMULSIYA",img:"https://i.imgur.com/tbI4up6.jpeg"},
+  {id:146,cat:10,name:"LAPATKA NARINCI",desc:"DUZ",img:"https://i.imgur.com/xe8l5gq.jpeg"},
+  {id:147,cat:10,name:"LAPATKA YASIL",desc:"",img:"https://i.imgur.com/rGpN0kz.jpeg"},
+  {id:148,cat:10,name:"LAPATKA 666",desc:"CALOY",img:"https://i.imgur.com/eTgyJfZ.jpeg"},
+  {id:149,cat:10,name:"LAPATKA YASIL",desc:"DUZ",img:"https://i.imgur.com/AzsozsW.jpeg"},
+  {id:150,cat:10,name:"LAPATKA 666",desc:"DUZ",img:"https://i.imgur.com/2cAcFj0.jpeg"},
+  {id:151,cat:10,name:"LAPATKA QARA BAHA",desc:"DUZ",img:"https://i.imgur.com/lpkpCXn.jpeg"},
+  {id:152,cat:10,name:"LAPATKA NARINCI",desc:"CALOY",img:"https://i.imgur.com/RzsU1kt.jpeg"},
+  {id:153,cat:10,name:"YAVA ",desc:"QARA / QIRMIZI / BOZ",img:"https://i.imgur.com/HyeP70X.jpeg"},
+  {id:154,cat:10,name:"XESER TEMIZLIYEN",desc:"",img:"https://i.imgur.com/nc8Zve8.jpeg"},
+  {id:155,cat:10,name:"BALTA SAXI",desc:"BALACA / YEKE",img:"https://i.imgur.com/oN6Mmo2.jpeg"},
+  {id:156,cat:10,name:"ORAQ",desc:"",img:"https://i.imgur.com/tfzh65u.jpeg"},
+  {id:157,cat:10,name:"LAPATKA SAP",desc:"1.20MM",img:"https://i.imgur.com/DKAqJWL.jpeg"},
+  {id:158,cat:10,name:"QVOZDYOR",desc:"400 / 600 / 800",img:"https://i.imgur.com/tzwR2R7.jpeg"},
+  {id:159,cat:10,name:"KESER SAPI",desc:"",img:"https://i.imgur.com/6KBEvNE.jpeg"},
+  {id:160,cat:10,name:"KUURUNC",desc:"1.5KQ",img:"https://i.imgur.com/hEaLjyK.jpeg"},
+  {id:161,cat:10,name:"DIRMIX KITAY",desc:"12 DIS / 14 DIS / 16 DIS",img:"https://i.imgur.com/yW25niF.jpeg"},
+  {id:162,cat:10,name:"LAPATKA/CEKIC",desc:"LAPATKA/CEKIC17",img:"https://i.imgur.com/ZYrlnwy.jpeg"},
+  {id:163,cat:10,name:"CEKIS KAFEL",desc:"",img:"https://i.imgur.com/M9g576f.jpeg"},
+  {id:164,cat:10,name:"CEKIS MIX BALA",desc:"",img:"https://i.imgur.com/HSyDmJu.jpeg"},
+  {id:165,cat:10,name:"CEKIC KAFEL",desc:"BALA / ORTA / YEKE",img:"https://i.imgur.com/P1pOn8S.jpeg"},
+  {id:166,cat:10,name:"CEKIS MIX DEMIR",desc:"250QR / 500QR",img:"https://i.imgur.com/prncOI7.jpeg"},
+  {id:167,cat:10,name:"KESER KOMPLEKT",desc:"",img:"https://i.imgur.com/nHlVCxn.jpeg"},
+  {id:168,cat:10,name:"DIRMIX SAMODELNIY",desc:"",img:"https://i.imgur.com/VNcq2sM.jpeg"},
+  {id:170,cat:10,name:"CEKIC",desc:"300QR / 500QR / 800QR / 1KQ / 1.5KQ / 2KQ",img:"https://i.imgur.com/LvCNdi8.jpeg"},
+  {id:171,cat:10,name:"BALTA TIYA RUS",desc:"BALA / YEKE",img:"https://i.imgur.com/yHlBd0K.jpeg"},
+  {id:172,cat:10,name:"LAPATKA/CEKIC",desc:"LAPATKA/CEKIC27",img:"https://i.imgur.com/RRTmTNf.jpeg"},
+  {id:173,cat:10,name:"BALTA QIRMIZI 600QR",desc:"",img:"https://i.imgur.com/i6DfPAq.jpeg"},
+  {id:174,cat:10,name:"BALTA KITAY YEKE",desc:"",img:"https://i.imgur.com/GBWVDlA.jpeg"},
+  {id:175,cat:11,name:"MISMAR",desc:"MISMAR1",img:"https://i.imgur.com/KXD2L6y.jpeg"},
+  {id:176,cat:11,name:"MISMAR",desc:"MISMAR2",img:"https://i.imgur.com/cwosWSk.jpeg"},
+  {id:177,cat:11,name:"MISMAR",desc:"MISMAR3",img:"https://i.imgur.com/UOWSaID.jpeg"},
+  {id:178,cat:11,name:"MISMAR",desc:"MISMAR4",img:"https://i.imgur.com/u2spSxH.jpeg"},
+  {id:179,cat:11,name:"MISMAR",desc:"MISMAR5",img:"https://i.imgur.com/HEJr9pM.jpeg"},
+  {id:180,cat:11,name:"MISMAR",desc:"MISMAR6",img:"https://i.imgur.com/yrODQsg.jpeg"},
+  {id:181,cat:11,name:"MISMAR",desc:"MISMAR7",img:"https://i.imgur.com/cnasMWw.jpeg"},
+  {id:182,cat:11,name:"MISMAR",desc:"MISMAR8",img:"https://i.imgur.com/Ph6Md36.jpeg"},
+  {id:183,cat:11,name:"MISMAR",desc:"MISMAR9",img:"https://i.imgur.com/d3wnY03.jpeg"},
+  {id:184,cat:11,name:"MISMAR",desc:"MISMAR10",img:"https://i.imgur.com/nV0vND7.jpeg"},
+  {id:185,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK1",img:"https://i.imgur.com/aDiGe3C.jpeg"},
+  {id:186,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK2",img:"https://i.imgur.com/mIyw5dn.jpeg"},
+  {id:187,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK3",img:"https://i.imgur.com/tWREuYb.jpeg"},
+  {id:188,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK4",img:"https://i.imgur.com/Fz5eMxr.jpeg"},
+  {id:189,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK5",img:"https://i.imgur.com/uCCAbEm.jpeg"},
+  {id:190,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK6",img:"https://i.imgur.com/XriOEzl.jpeg"},
+  {id:191,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK7",img:"https://i.imgur.com/TcxkV3D.jpeg"},
+  {id:192,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK8",img:"https://i.imgur.com/ivTyWIa.jpeg"},
+  {id:193,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK9",img:"https://i.imgur.com/XsY35Ay.jpeg"},
+  {id:194,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK10",img:"https://i.imgur.com/y7BF2UC.jpeg"},
+  {id:195,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK11",img:"https://i.imgur.com/xmQrP0B.jpeg"},
+  {id:196,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK12",img:"https://i.imgur.com/zva6R70.jpeg"},
+  {id:197,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK13",img:"https://i.imgur.com/ZcByV97.jpeg"},
+  {id:198,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK14",img:"https://i.imgur.com/gEehc8k.jpeg"},
+  {id:199,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK15",img:"https://i.imgur.com/HUsolB6.jpeg"},
+  {id:200,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK16",img:"https://i.imgur.com/Iat2ekN.jpeg"},
+  {id:201,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK17",img:"https://i.imgur.com/PvBcCRe.jpeg"},
+  {id:202,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK18",img:"https://i.imgur.com/8DGnKo2.jpeg"},
+  {id:203,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK19",img:"https://i.imgur.com/GeIbP2H.jpeg"},
+  {id:204,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK20",img:"https://i.imgur.com/EuyAXoP.jpeg"},
+  {id:205,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK21",img:"https://i.imgur.com/WXKRMH4.jpeg"},
+  {id:206,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK22",img:"https://i.imgur.com/EXZSXsB.jpeg"},
+  {id:207,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK23",img:"https://i.imgur.com/bzdemvR.jpeg"},
+  {id:208,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK24",img:"https://i.imgur.com/3vuNl5v.jpeg"},
+  {id:209,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK25",img:"https://i.imgur.com/pVjt6u8.jpeg"},
+  {id:210,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK26",img:"https://i.imgur.com/WVW96JG.jpeg"},
+  {id:211,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK27",img:"https://i.imgur.com/CJEzNsI.jpeg"},
+  {id:212,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK28",img:"https://i.imgur.com/FjpkFV3.jpeg"},
+  {id:213,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK29",img:"https://i.imgur.com/YSdfhQ2.jpeg"},
+  {id:214,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK30",img:"https://i.imgur.com/GKsic9Y.jpeg"},
+  {id:215,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK31",img:"https://i.imgur.com/cAFlPf7.jpeg"},
+  {id:216,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK32",img:"https://i.imgur.com/1zJMCUm.jpeg"},
+  {id:217,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK33",img:"https://i.imgur.com/pgYVZQH.jpeg"},
+  {id:218,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK34",img:"https://i.imgur.com/AnTzoTP.jpeg"},
+  {id:219,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK35",img:"https://i.imgur.com/VgFojpj.jpeg"},
+  {id:220,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK36",img:"https://i.imgur.com/delrzb6.jpeg"},
+  {id:221,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK37",img:"https://i.imgur.com/f1tGF3f.jpeg"},
+  {id:222,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK38",img:"https://i.imgur.com/UxbGPuR.jpeg"},
+  {id:223,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK39",img:"https://i.imgur.com/c9IYT82.jpeg"},
+  {id:224,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK40",img:"https://i.imgur.com/yp67KBI.jpeg"},
+  {id:225,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK41",img:"https://i.imgur.com/4i6scr8.jpeg"},
+  {id:226,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK42",img:"https://i.imgur.com/uNStwMQ.jpeg"},
+  {id:227,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK43",img:"https://i.imgur.com/ECTF4Zn.jpeg"},
+  {id:228,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK44",img:"https://i.imgur.com/mPmxI3G.jpeg"},
+  {id:229,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK45",img:"https://i.imgur.com/IwNHE5N.jpeg"},
+  {id:230,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK46",img:"https://i.imgur.com/qfbe55z.jpeg"},
+  {id:231,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK47",img:"https://i.imgur.com/pb5aQg2.jpeg"},
+  {id:232,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK48",img:"https://i.imgur.com/vlK2w3o.jpeg"},
+  {id:233,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK49",img:"https://i.imgur.com/YaNpHmE.jpeg"},
+  {id:234,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK50",img:"https://i.imgur.com/pEsge5M.jpeg"},
+  {id:235,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK51",img:"https://i.imgur.com/EykDUbJ.jpeg"},
+  {id:236,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK52",img:"https://i.imgur.com/vLI0sPJ.jpeg"},
+  {id:237,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK53",img:"https://i.imgur.com/UnlQrXG.jpeg"},
+  {id:238,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK54",img:"https://i.imgur.com/rhTyoP8.jpeg"},
+  {id:239,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK55",img:"https://i.imgur.com/h7SNPxP.jpeg"},
+  {id:240,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK56",img:"https://i.imgur.com/MNOD9Wf.jpeg"},
+  {id:241,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK57",img:"https://i.imgur.com/CWc7Lgd.jpeg"},
+  {id:242,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK58",img:"https://i.imgur.com/Ra824cL.jpeg"},
+  {id:243,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK59",img:"https://i.imgur.com/JQ1uxpW.jpeg"},
+  {id:244,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK60",img:"https://i.imgur.com/GrBOSge.jpeg"},
+  {id:245,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK61",img:"https://i.imgur.com/yUDyheq.jpeg"},
+  {id:246,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK62",img:"https://i.imgur.com/SomFykT.jpeg"},
+  {id:247,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK63",img:"https://i.imgur.com/HqWCnrz.jpeg"},
+  {id:248,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK64",img:"https://i.imgur.com/ZcUb5We.jpeg"},
+  {id:249,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK65",img:"https://i.imgur.com/CDshBlk.jpeg"},
+  {id:250,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK66",img:"https://i.imgur.com/ZFSseJQ.jpeg"},
+  {id:251,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK67",img:"https://i.imgur.com/vFfWMZd.jpeg"},
+  {id:252,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK68",img:"https://i.imgur.com/F9YEWr0.jpeg"},
+  {id:253,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK69",img:"https://i.imgur.com/RDU3W3Z.jpeg"},
+  {id:254,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK70",img:"https://i.imgur.com/gcec6ag.jpeg"},
+  {id:255,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK71",img:"https://i.imgur.com/uAPrgkv.jpeg"},
+  {id:256,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK72",img:"https://i.imgur.com/5pxg6WO.jpeg"},
+  {id:257,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK73",img:"https://i.imgur.com/M8Brgsg.jpeg"},
+  {id:258,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK74",img:"https://i.imgur.com/IGDFmHe.jpeg"},
+  {id:259,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK75",img:"https://i.imgur.com/jXssxvA.jpeg"},
+  {id:260,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK76",img:"https://i.imgur.com/5yclpKX.jpeg"},
+  {id:261,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK77",img:"https://i.imgur.com/liT0dhi.jpeg"},
+  {id:262,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK78",img:"https://i.imgur.com/MU2foez.jpeg"},
+  {id:263,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK79",img:"https://i.imgur.com/b9ZauqF.jpeg"},
+  {id:264,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK80",img:"https://i.imgur.com/QYXtLlL.jpeg"},
+  {id:265,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK81",img:"https://i.imgur.com/FcicVrk.jpeg"},
+  {id:266,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK82",img:"https://i.imgur.com/TtgWY8B.jpeg"},
+  {id:267,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK83",img:"https://i.imgur.com/06xRrIg.jpeg"},
+  {id:268,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK84",img:"https://i.imgur.com/vy5PUtR.jpeg"},
+  {id:269,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK85",img:"https://i.imgur.com/sDJrpwH.jpeg"},
+  {id:270,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK86",img:"https://i.imgur.com/utQKP5d.jpeg"},
+  {id:271,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK87",img:"https://i.imgur.com/f6Gtjlz.jpeg"},
+  {id:272,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK88",img:"https://i.imgur.com/SytcQ2l.jpeg"},
+  {id:273,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK89",img:"https://i.imgur.com/afIpDEq.jpeg"},
+  {id:274,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK90",img:"https://i.imgur.com/KFtGqih.jpeg"},
+  {id:275,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK91",img:"https://i.imgur.com/I4Hd5cS.jpeg"},
+  {id:276,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK92",img:"https://i.imgur.com/TqQJz8P.jpeg"},
+  {id:277,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK93",img:"https://i.imgur.com/kBnipQe.jpeg"},
+  {id:278,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK94",img:"https://i.imgur.com/m1cPLeP.jpeg"},
+  {id:279,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK95",img:"https://i.imgur.com/QjeJUNh.jpeg"},
+  {id:280,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK96",img:"https://i.imgur.com/M34qAf7.jpeg"},
+  {id:281,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK97",img:"https://i.imgur.com/DLo2oDS.jpeg"},
+  {id:282,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK98",img:"https://i.imgur.com/zElLL7d.jpeg"},
+  {id:283,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK99",img:"https://i.imgur.com/0Tn73jc.jpeg"},
+  {id:284,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK100",img:"https://i.imgur.com/NFQvuHE.jpeg"},
+  {id:285,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK101",img:"https://i.imgur.com/P9xkJen.jpeg"},
+  {id:286,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK102",img:"https://i.imgur.com/h1k5Wb6.jpeg"},
+  {id:287,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK103",img:"https://i.imgur.com/YpCI61O.jpeg"},
+  {id:288,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK104",img:"https://i.imgur.com/GAKJwVS.jpeg"},
+  {id:289,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK105",img:"https://i.imgur.com/uzd4YnX.jpeg"},
+  {id:290,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK106",img:"https://i.imgur.com/UF9oKR5.jpeg"},
+  {id:291,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK107",img:"https://i.imgur.com/yBx6qGc.jpeg"},
+  {id:292,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK108",img:"https://i.imgur.com/VjyVMb1.jpeg"},
+  {id:293,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK109",img:"https://i.imgur.com/J01F0vn.jpeg"},
+  {id:294,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK110",img:"https://i.imgur.com/AIHDTXt.jpeg"},
+  {id:295,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK111",img:"https://i.imgur.com/Bpyspp3.jpeg"},
+  {id:296,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK112",img:"https://i.imgur.com/OhE9ipl.jpeg"},
+  {id:297,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK113",img:"https://i.imgur.com/HJmlZpD.jpeg"},
+  {id:298,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK114",img:"https://i.imgur.com/o9Wo475.jpeg"},
+  {id:299,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK115",img:"https://i.imgur.com/s6CAPQK.jpeg"},
+  {id:300,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK116",img:"https://i.imgur.com/K5Yfq7A.jpeg"},
+  {id:301,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK117",img:"https://i.imgur.com/dLIZTDz.jpeg"},
+  {id:302,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK118",img:"https://i.imgur.com/umH3sUT.jpeg"},
+  {id:303,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK119",img:"https://i.imgur.com/O9qvQOs.jpeg"},
+  {id:304,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK120",img:"https://i.imgur.com/VX9SkEZ.jpeg"},
+  {id:305,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK121",img:"https://i.imgur.com/avaePfD.jpeg"},
+  {id:306,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK122",img:"https://i.imgur.com/U5PwS0h.jpeg"},
+  {id:307,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK123",img:"https://i.imgur.com/ozluXHx.jpeg"},
+  {id:308,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK124",img:"https://i.imgur.com/dWomzRy.jpeg"},
+  {id:309,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK125",img:"https://i.imgur.com/AvRV4Cu.jpeg"},
+  {id:310,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK126",img:"https://i.imgur.com/5BBKTPG.jpeg"},
+  {id:311,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK311",img:"https://i.imgur.com/rmtWcYA.jpeg"},
+  {id:312,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK312",img:"https://i.imgur.com/IHNWgmZ.jpeg"},
+  {id:313,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK313",img:"https://i.imgur.com/4K5K6ZM.jpeg"},
+  {id:314,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK314",img:"https://i.imgur.com/ZUctmwD.jpeg"},
+  {id:315,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK315",img:"https://i.imgur.com/EfeF3SG.jpeg"},
+  {id:316,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK316",img:"https://i.imgur.com/fLHuyO3.jpeg"},
+  {id:317,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK317",img:"https://i.imgur.com/dTZKsf2.jpeg"},
+  {id:318,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK318",img:"https://i.imgur.com/FRrSOFh.jpeg"},
+  {id:319,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK319",img:"https://i.imgur.com/xYFrTXb.jpeg"},
+  {id:320,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK320",img:"https://i.imgur.com/XYVXXDs.jpeg"},
+  {id:321,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK321",img:"https://i.imgur.com/24MTRu2.jpeg"},
+  {id:322,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK322",img:"https://i.imgur.com/Mc1sgCJ.jpeg"},
+  {id:323,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK323",img:"https://i.imgur.com/kF4RZp4.jpeg"},
+  {id:324,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK324",img:"https://i.imgur.com/3NxVdF6.jpeg"},
+  {id:325,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK325",img:"https://i.imgur.com/NfNKp9Q.jpeg"},
+  {id:326,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK326",img:"https://i.imgur.com/9h9COYA.jpeg"},
+  {id:327,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK327",img:"https://i.imgur.com/alcnd7N.jpeg"},
+  {id:328,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK328",img:"https://i.imgur.com/olJhJ7m.jpeg"},
+  {id:329,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK329",img:"https://i.imgur.com/SMTpdlg.jpeg"},
+  {id:330,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK330",img:"https://i.imgur.com/t6cWXVz.jpeg"},
+  {id:331,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK331",img:"https://i.imgur.com/cPOWZUs.jpeg"},
+  {id:332,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK332",img:"https://i.imgur.com/q4Iv8qy.jpeg"},
+  {id:333,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK333",img:"https://i.imgur.com/GB8F6iD.jpeg"},
+  {id:334,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK334",img:"https://i.imgur.com/g8ebjPi.jpeg"},
+  {id:335,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK335",img:"https://i.imgur.com/9CqQ7XU.jpeg"},
+  {id:336,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK336",img:"https://i.imgur.com/cQcWmgZ.jpeg"},
+  {id:337,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK337",img:"https://i.imgur.com/6jRkzEe.jpeg"},
+  {id:338,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK338",img:"https://i.imgur.com/isAhDRk.jpeg"},
+  {id:339,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK339",img:"https://i.imgur.com/C549knq.jpeg"},
+  {id:340,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK340",img:"https://i.imgur.com/6xAd6Rt.jpeg"},
+  {id:341,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK341",img:"https://i.imgur.com/Ma8ah9I.jpeg"},
+  {id:342,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK342",img:"https://i.imgur.com/0QAUeBf.jpeg"},
+  {id:343,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK343",img:"https://i.imgur.com/TQcjj55.jpeg"},
+  {id:344,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK344",img:"https://i.imgur.com/wuXvwfG.jpeg"},
+  {id:345,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK345",img:"https://i.imgur.com/nds7w03.jpeg"},
+  {id:346,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK346",img:"https://i.imgur.com/ugLmJdC.jpeg"},
+  {id:347,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK347",img:"https://i.imgur.com/hRU9SFw.jpeg"},
+  {id:348,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK348",img:"https://i.imgur.com/icMUzDg.jpeg"},
+  {id:349,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK349",img:"https://i.imgur.com/NF8nugR.jpeg"},
+  {id:350,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK350",img:"https://i.imgur.com/iX3pmG8.jpeg"},
+  {id:351,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK351",img:"https://i.imgur.com/9oKpjYt.jpeg"},
+  {id:352,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK352",img:"https://i.imgur.com/Z47P1EC.jpeg"},
+  {id:353,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK353",img:"https://i.imgur.com/2YtWz4h.jpeg"},
+  {id:354,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK354",img:"https://i.imgur.com/o9zgm5t.jpeg"},
+  {id:355,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK355",img:"https://i.imgur.com/6PUaEBp.jpeg"},
+  {id:356,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK356",img:"https://i.imgur.com/zNyMs0Y.jpeg"},
+  {id:357,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK357",img:"https://i.imgur.com/tetDaqJ.jpeg"},
+  {id:358,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK358",img:"https://i.imgur.com/kOY795N.jpeg"},
+  {id:359,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK359",img:"https://i.imgur.com/0HcDYqI.jpeg"},
+  {id:360,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK360",img:"https://i.imgur.com/NC4gjyL.jpeg"},
+  {id:361,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK361",img:"https://i.imgur.com/f3i3isu.jpeg"},
+  {id:762,cat:12,name:"SANTEXNIK",desc:"SANTEXNIK362",img:"https://i.imgur.com/lP5GybR.jpeg"},
+  {id:362,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE2",img:"https://i.imgur.com/IQTF50L.jpeg"},
+  {id:363,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE3",img:"https://i.imgur.com/sYQPdek.jpeg"},
+  {id:364,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE4",img:"https://i.imgur.com/dfaqKf0.jpeg"},
+  {id:365,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE5",img:"https://i.imgur.com/6225xZE.jpeg"},
+  {id:366,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE6",img:"https://i.imgur.com/bwq4rU4.jpeg"},
+  {id:367,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE7",img:"https://i.imgur.com/R73VAqi.jpeg"},
+  {id:368,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE8",img:"https://i.imgur.com/PzHNO6H.jpeg"},
+  {id:369,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE9",img:"https://i.imgur.com/KKpdKGH.jpeg"},
+  {id:370,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE10",img:"https://i.imgur.com/874XKBM.jpeg"},
+  {id:371,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE11",img:"https://i.imgur.com/JRttxbL.jpeg"},
+  {id:372,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE12",img:"https://i.imgur.com/egVwQCv.jpeg"},
+  {id:373,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE13",img:"https://i.imgur.com/7NRHh2d.jpeg"},
+  {id:374,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE14",img:"https://i.imgur.com/jykEMUE.jpeg"},
+  {id:375,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE15",img:"https://i.imgur.com/FUN978q.jpeg"},
+  {id:376,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE16",img:"https://i.imgur.com/lZ4nolT.jpeg"},
+  {id:377,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE17",img:"https://i.imgur.com/BiCWMgc.jpeg"},
+  {id:378,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE18",img:"https://i.imgur.com/wCz8rLz.jpeg"},
+  {id:379,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE19",img:"https://i.imgur.com/kcu5IJe.jpeg"},
+  {id:380,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE20",img:"https://i.imgur.com/Lsl4Wrq.jpeg"},
+  {id:381,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE21",img:"https://i.imgur.com/yUYCWbg.jpeg"},
+  {id:382,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE22",img:"https://i.imgur.com/OMZo90c.jpeg"},
+  {id:383,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE23",img:"https://i.imgur.com/0bixbLh.jpeg"},
+  {id:384,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE24",img:"https://i.imgur.com/kgAbYK4.jpeg"},
+  {id:385,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE25",img:"https://i.imgur.com/pZLifzt.jpeg"},
+  {id:386,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE26",img:"https://i.imgur.com/6p0Hxnb.jpeg"},
+  {id:387,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE27",img:"https://i.imgur.com/wI5twYq.jpeg"},
+  {id:388,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE28",img:"https://i.imgur.com/VG9sSmO.jpeg"},
+  {id:389,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE29",img:"https://i.imgur.com/mkObbb0.jpeg"},
+  {id:390,cat:13,name:"SILIKON MAYE",desc:"SILIKON MAYE30",img:"https://i.imgur.com/kAvQQGE.jpeg"},
+  {id:391,cat:14,name:"SVERLO",desc:"SVERLO2",img:"https://i.imgur.com/m5Xiq8M.jpeg"},
+  {id:392,cat:14,name:"SVERLO",desc:"SVERLO3",img:"https://i.imgur.com/2v7Qnc3.jpeg"},
+  {id:393,cat:14,name:"SVERLO",desc:"SVERLO4",img:"https://i.imgur.com/XPcHISy.jpeg"},
+  {id:394,cat:14,name:"SVERLO",desc:"SVERLO5",img:"https://i.imgur.com/iVrQfVJ.jpeg"},
+  {id:395,cat:14,name:"SVERLO",desc:"SVERLO6",img:"https://i.imgur.com/vNmptkW.jpeg"},
+  {id:396,cat:14,name:"SVERLO",desc:"SVERLO7",img:"https://i.imgur.com/H6JNQ7p.jpeg"},
+  {id:397,cat:14,name:"SVERLO",desc:"SVERLO8",img:"https://i.imgur.com/6bVwm6B.jpeg"},
+  {id:398,cat:14,name:"SVERLO",desc:"SVERLO9",img:"https://i.imgur.com/AkZvMYL.jpeg"},
+  {id:399,cat:14,name:"SVERLO",desc:"SVERLO10",img:"https://i.imgur.com/djc9pSM.jpeg"},
+  {id:400,cat:14,name:"SVERLO",desc:"SVERLO11",img:"https://i.imgur.com/Qh8VMF8.jpeg"},
+  {id:401,cat:14,name:"SVERLO",desc:"SVERLO12",img:"https://i.imgur.com/YuLuwdk.jpeg"},
+  {id:402,cat:14,name:"SVERLO",desc:"SVERLO13",img:"https://i.imgur.com/g0rB4iD.jpeg"},
+  {id:403,cat:14,name:"SVERLO",desc:"SVERLO14",img:"https://i.imgur.com/DSGV9Y7.jpeg"},
+  {id:404,cat:14,name:"SVERLO",desc:"SVERLO15",img:"https://i.imgur.com/6PHLmD0.jpeg"},
+  {id:405,cat:14,name:"SVERLO",desc:"SVERLO16",img:"https://i.imgur.com/3zZQefa.jpeg"},
+  {id:406,cat:14,name:"SVERLO",desc:"SVERLO17",img:"https://i.imgur.com/qrxfoym.jpeg"},
+  {id:407,cat:14,name:"SVERLO",desc:"SVERLO18",img:"https://i.imgur.com/n1LBBGP.jpeg"},
+  {id:408,cat:14,name:"SVERLO",desc:"SVERLO19",img:"https://i.imgur.com/04DCnRK.jpeg"},
+  {id:409,cat:14,name:"SVERLO",desc:"SVERLO20",img:"https://i.imgur.com/DPBgpYq.jpeg"},
+  {id:410,cat:14,name:"SVERLO",desc:"SVERLO21",img:"https://i.imgur.com/bEaoI5L.jpeg"},
+  {id:411,cat:14,name:"SVERLO",desc:"SVERLO22",img:"https://i.imgur.com/T1moTWL.jpeg"},
+  {id:412,cat:14,name:"SVERLO",desc:"SVERLO23",img:"https://i.imgur.com/AYUGpJW.jpeg"},
+  {id:413,cat:14,name:"SVERLO",desc:"SVERLO24",img:"https://i.imgur.com/V3Qhadr.jpeg"},
+  {id:414,cat:14,name:"SVERLO",desc:"SVERLO25",img:"https://i.imgur.com/U9mHen9.jpeg"},
+  {id:415,cat:14,name:"SVERLO",desc:"SVERLO26",img:"https://i.imgur.com/ZIosA0h.jpeg"},
+  {id:416,cat:14,name:"SVERLO",desc:"SVERLO27",img:"https://i.imgur.com/Jc9TdUR.jpeg"},
+  {id:417,cat:14,name:"SVERLO",desc:"SVERLO28",img:"https://i.imgur.com/iR84hz2.jpeg"},
+  {id:418,cat:14,name:"SVERLO",desc:"SVERLO29",img:"https://i.imgur.com/osttJpI.jpeg"},
+  {id:419,cat:14,name:"SVERLO",desc:"SVERLO30",img:"https://i.imgur.com/RK3aQ8W.jpeg"},
+  {id:420,cat:14,name:"SVERLO",desc:"SVERLO31",img:"https://i.imgur.com/OwMqZYt.jpeg"},
+  {id:421,cat:15,name:"SURUP",desc:"SURUP2",img:"https://i.imgur.com/SbbhyGH.jpeg"},
+  {id:422,cat:15,name:"SURUP",desc:"SURUP3",img:"https://i.imgur.com/FWXSiZN.jpeg"},
+  {id:423,cat:15,name:"SURUP",desc:"SURUP4",img:"https://i.imgur.com/mxxDerb.jpeg"},
+  {id:424,cat:15,name:"SURUP",desc:"SURUP5",img:"https://i.imgur.com/jsCAmnb.jpeg"},
+  {id:425,cat:15,name:"SURUP",desc:"SURUP6",img:"https://i.imgur.com/GCLqWRs.jpeg"},
+  {id:426,cat:15,name:"SURUP",desc:"SURUP7",img:"https://i.imgur.com/EsY1Qql.jpeg"},
+  {id:427,cat:15,name:"SURUP",desc:"SURUP8",img:"https://i.imgur.com/Li6kxsC.jpeg"},
+  {id:428,cat:15,name:"SURUP",desc:"SURUP9",img:"https://i.imgur.com/S5vBp9T.jpeg"},
+  {id:429,cat:15,name:"SURUP",desc:"SURUP10",img:"https://i.imgur.com/7uVtjHn.jpeg"},
+  {id:430,cat:15,name:"SURUP",desc:"SURUP11",img:"https://i.imgur.com/HjufVTs.jpeg"},
+  {id:431,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA2",img:"https://i.imgur.com/qfyHnGA.jpeg"},
+  {id:432,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA3",img:"https://i.imgur.com/7LhTYVO.jpeg"},
+  {id:433,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA4",img:"https://i.imgur.com/UkUEUPl.jpeg"},
+  {id:434,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA5",img:"https://i.imgur.com/Rag6gWt.jpeg"},
+  {id:435,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA6",img:"https://i.imgur.com/r1t19X2.jpeg"},
+  {id:436,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA7",img:"https://i.imgur.com/q0xpiQw.jpeg"},
+  {id:437,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA8",img:"https://i.imgur.com/EChrW5o.jpeg"},
+  {id:438,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA9",img:"https://i.imgur.com/eWj7Cnr.jpeg"},
+  {id:439,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA10",img:"https://i.imgur.com/b36xyJ0.jpeg"},
+  {id:440,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA11",img:"https://i.imgur.com/gRerMLU.jpeg"},
+  {id:441,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA12",img:"https://i.imgur.com/zKdxtCa.jpeg"},
+  {id:442,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA13",img:"https://i.imgur.com/ZUUhoku.jpeg"},
+  {id:443,cat:16,name:"VANNA/VEDRA",desc:"VANNA/VEDRA14",img:"https://i.imgur.com/QZLUHLv.jpeg"},
+  {id:444,cat:17,name:"ZAMOK",desc:"ZAMOK1",img:"https://i.imgur.com/OQrk6Ex.jpeg"},
+  {id:445,cat:17,name:"ZAMOK",desc:"ZAMOK2",img:"https://i.imgur.com/EgSOdsG.jpeg"},
+  {id:446,cat:17,name:"ZAMOK",desc:"ZAMOK3",img:"https://i.imgur.com/xFopC11.jpeg"},
+  {id:447,cat:17,name:"ZAMOK",desc:"ZAMOK4",img:"https://i.imgur.com/9QWxvc6.jpeg"},
+  {id:448,cat:17,name:"ZAMOK",desc:"ZAMOK5",img:"https://i.imgur.com/OdQzFal.jpeg"},
+  {id:449,cat:17,name:"ZAMOK",desc:"ZAMOK6",img:"https://i.imgur.com/lrOnYJI.jpeg"},
+  {id:450,cat:17,name:"ZAMOK",desc:"ZAMOK7",img:"https://i.imgur.com/NpAtf0o.jpeg"},
+  {id:451,cat:17,name:"ZAMOK",desc:"ZAMOK8",img:"https://i.imgur.com/qv6BAw5.jpeg"},
+  {id:452,cat:17,name:"ZAMOK",desc:"ZAMOK9",img:"https://i.imgur.com/A4Dn7sS.jpeg"},
+  {id:453,cat:17,name:"ZAMOK",desc:"ZAMOK10",img:"https://i.imgur.com/JOJGQ1n.jpeg"},
+  {id:454,cat:17,name:"ZAMOK",desc:"ZAMOK11",img:"https://i.imgur.com/2l6VIWm.jpeg"},
+  {id:455,cat:17,name:"ZAMOK",desc:"ZAMOK12",img:"https://i.imgur.com/53k0In4.jpeg"},
+  {id:456,cat:17,name:"ZAMOK",desc:"ZAMOK13",img:"https://i.imgur.com/qpZLQOt.jpeg"},
+  {id:457,cat:17,name:"ZAMOK",desc:"ZAMOK14",img:"https://i.imgur.com/AkXBeGK.jpeg"},
+  {id:458,cat:17,name:"ZAMOK",desc:"ZAMOK15",img:"https://i.imgur.com/ZC8JZtz.jpeg"},
+  {id:459,cat:17,name:"ZAMOK",desc:"ZAMOK16",img:"https://i.imgur.com/6cqmswt.jpeg"},
+  {id:460,cat:17,name:"ZAMOK",desc:"ZAMOK17",img:"https://i.imgur.com/Z0HHIoK.jpeg"},
+  {id:461,cat:17,name:"ZAMOK",desc:"ZAMOK18",img:"https://i.imgur.com/sFzvExY.jpeg"},
+  {id:462,cat:17,name:"ZAMOK",desc:"ZAMOK19",img:"https://i.imgur.com/zBzMYW9.jpeg"},
+  {id:463,cat:17,name:"ZAMOK",desc:"ZAMOK20",img:"https://i.imgur.com/2p01YGC.jpeg"},
+  {id:464,cat:17,name:"ZAMOK",desc:"ZAMOK21",img:"https://i.imgur.com/GAEBrJJ.jpeg"},
+  {id:465,cat:17,name:"ZAMOK",desc:"ZAMOK22",img:"https://i.imgur.com/6R2DZka.jpeg"},
+  {id:466,cat:17,name:"ZAMOK",desc:"ZAMOK23",img:"https://i.imgur.com/c2wPCUL.jpeg"},
+  {id:467,cat:17,name:"ZAMOK",desc:"ZAMOK24",img:"https://i.imgur.com/vCVGGbX.jpeg"},
+  {id:468,cat:17,name:"ZAMOK",desc:"ZAMOK25",img:"https://i.imgur.com/KgXqxeF.jpeg"},
+  {id:469,cat:17,name:"ZAMOK",desc:"ZAMOK26",img:"https://i.imgur.com/VkKfPuy.jpeg"},
+  {id:470,cat:17,name:"ZAMOK",desc:"ZAMOK27",img:"https://i.imgur.com/hdeOYQW.jpeg"},
+  {id:471,cat:17,name:"ZAMOK",desc:"ZAMOK28",img:"https://i.imgur.com/Sp4r5QM.jpeg"},
+  {id:472,cat:17,name:"ZAMOK",desc:"ZAMOK29",img:"https://i.imgur.com/TDP6j02.jpeg"},
+  {id:473,cat:18,name:"TESERUFAT",desc:"TESERUFAT1",img:"https://i.imgur.com/1TWWslu.jpeg"},
+   {id:474,cat:18,name:"TESERUFAT",desc:"TESERUFAT2",img:"https://i.imgur.com/jU1u11b.jpeg"},
+   {id:475,cat:18,name:"TESERUFAT",desc:"TESERUFAT3",img:"https://i.imgur.com/yH9lrsi.jpeg"},
+   {id:476,cat:18,name:"TESERUFAT",desc:"TESERUFAT4",img:"https://i.imgur.com/ZTgODxd.jpeg"},
+   {id:477,cat:18,name:"TESERUFAT",desc:"TESERUFAT5",img:"https://i.imgur.com/WnYrDbn.jpeg"},
+   {id:478,cat:18,name:"TESERUFAT",desc:"TESERUFAT6",img:"https://i.imgur.com/9lY0ZoO.jpeg"},
+   {id:479,cat:18,name:"TESERUFAT",desc:"TESERUFAT7",img:"https://i.imgur.com/po6Nzcm.jpeg"},
+   {id:480,cat:18,name:"TESERUFAT",desc:"TESERUFAT8",img:"https://i.imgur.com/2NrzQs7.jpeg"},
+   {id:481,cat:18,name:"TESERUFAT",desc:"TESERUFAT9",img:"https://i.imgur.com/P6bifA4.jpeg"},
+   {id:482,cat:18,name:"TESERUFAT",desc:"TESERUFAT10",img:"https://i.imgur.com/70uJyTM.jpeg"},
+   {id:483,cat:18,name:"TESERUFAT",desc:"TESERUFAT11",img:"https://i.imgur.com/vjUcA9X.jpeg"},
+   {id:484,cat:18,name:"TESERUFAT",desc:"TESERUFAT12",img:"https://i.imgur.com/DO0ZviK.jpeg"},
+   {id:485,cat:18,name:"TESERUFAT",desc:"TESERUFAT13",img:"https://i.imgur.com/gho9Jkk.jpeg"},
+   {id:486,cat:18,name:"TESERUFAT",desc:"TESERUFAT14",img:"https://i.imgur.com/0rhakUk.jpeg"},
+   {id:487,cat:18,name:"TESERUFAT",desc:"TESERUFAT15",img:"https://i.imgur.com/k4rF6wC.jpeg"},
+   {id:488,cat:18,name:"TESERUFAT",desc:"TESERUFAT16",img:"https://i.imgur.com/oYq04ci.jpeg"},
+   {id:489,cat:18,name:"TESERUFAT",desc:"TESERUFAT17",img:"https://i.imgur.com/RQm8jUb.jpeg"},
+   {id:490,cat:18,name:"TESERUFAT",desc:"TESERUFAT18",img:"https://i.imgur.com/83iVm8U.jpeg"},
+   {id:491,cat:18,name:"TESERUFAT",desc:"TESERUFAT19",img:"https://i.imgur.com/X3WUEYI.jpeg"},
+   {id:492,cat:18,name:"TESERUFAT",desc:"TESERUFAT20",img:"https://i.imgur.com/TTlDSOH.jpeg"},
+   {id:493,cat:18,name:"TESERUFAT",desc:"TESERUFAT21",img:"https://i.imgur.com/Nz3GUXw.jpeg"},
+   {id:494,cat:18,name:"TESERUFAT",desc:"TESERUFAT22",img:"https://i.imgur.com/Irg3rDJ.jpeg"},
+   {id:495,cat:18,name:"TESERUFAT",desc:"TESERUFAT23",img:"https://i.imgur.com/oBGIYRY.jpeg"},
+   {id:496,cat:18,name:"TESERUFAT",desc:"TESERUFAT24",img:"https://i.imgur.com/cmYQBeq.jpeg"},
+   {id:497,cat:18,name:"TESERUFAT",desc:"TESERUFAT25",img:"https://i.imgur.com/NYSQFi7.jpeg"},
+   {id:498,cat:18,name:"TESERUFAT",desc:"TESERUFAT26",img:"https://i.imgur.com/pQP3LKu.jpeg"},
+   {id:499,cat:18,name:"TESERUFAT",desc:"TESERUFAT27",img:"https://i.imgur.com/Drb7B8e.jpeg"},
+   {id:500,cat:18,name:"TESERUFAT",desc:"TESERUFAT28",img:"https://i.imgur.com/QHrUmwv.jpeg"},
+   {id:501,cat:18,name:"TESERUFAT",desc:"TESERUFAT29",img:"https://i.imgur.com/4yr1slO.jpeg"},
+   {id:502,cat:18,name:"TESERUFAT",desc:"TESERUFAT30",img:"https://i.imgur.com/T6BUA6f.jpeg"},
+   {id:503,cat:18,name:"TESERUFAT",desc:"TESERUFAT31",img:"https://i.imgur.com/qjjrdS1.jpeg"},
+   {id:504,cat:18,name:"TESERUFAT",desc:"TESERUFAT32",img:"https://i.imgur.com/vy65zh9.jpeg"},
+   {id:505,cat:18,name:"TESERUFAT",desc:"TESERUFAT33",img:"https://i.imgur.com/VXuKU4I.jpeg"},
+   {id:506,cat:18,name:"TESERUFAT",desc:"TESERUFAT34",img:"https://i.imgur.com/vamcS6Q.jpeg"},
+   {id:507,cat:18,name:"TESERUFAT",desc:"TESERUFAT35",img:"https://i.imgur.com/nEEY643.jpeg"},
+   {id:508,cat:18,name:"TESERUFAT",desc:"TESERUFAT36",img:"https://i.imgur.com/WnyqQSo.jpeg"},
+   {id:509,cat:18,name:"TESERUFAT",desc:"TESERUFAT37",img:"https://i.imgur.com/XL7nHSr.jpeg"},
+   {id:510,cat:18,name:"TESERUFAT",desc:"TESERUFAT38",img:"https://i.imgur.com/G3gYaaO.jpeg"},
+   {id:511,cat:18,name:"TESERUFAT",desc:"TESERUFAT39",img:"https://i.imgur.com/izErWEc.jpeg"},
+   {id:512,cat:18,name:"TESERUFAT",desc:"TESERUFAT40",img:"https://i.imgur.com/3ivM2uf.jpeg"},
+   {id:513,cat:18,name:"TESERUFAT",desc:"TESERUFAT41",img:"https://i.imgur.com/hNRjHPS.jpeg"},
+   {id:514,cat:18,name:"TESERUFAT",desc:"TESERUFAT42",img:"https://i.imgur.com/dlcH8qM.jpeg"},
+   {id:515,cat:18,name:"TESERUFAT",desc:"TESERUFAT43",img:"https://i.imgur.com/EwIp9Nn.jpeg"},
+   {id:516,cat:18,name:"TESERUFAT",desc:"TESERUFAT44",img:"https://i.imgur.com/CiT6LZ3.jpeg"},
+   {id:517,cat:18,name:"TESERUFAT",desc:"TESERUFAT45",img:"https://i.imgur.com/GkrFY8w.jpeg"},
+   {id:518,cat:18,name:"TESERUFAT",desc:"TESERUFAT46",img:"https://i.imgur.com/kFr96Zv.jpeg"},
+   {id:519,cat:18,name:"TESERUFAT",desc:"TESERUFAT47",img:"https://i.imgur.com/XMQGAex.jpeg"},
+   {id:520,cat:18,name:"TESERUFAT",desc:"TESERUFAT48",img:"https://i.imgur.com/XMJEtXQ.jpeg"},
+   {id:521,cat:18,name:"TESERUFAT",desc:"TESERUFAT49",img:"https://i.imgur.com/81bjuLE.jpeg"},
+   {id:522,cat:18,name:"TESERUFAT",desc:"TESERUFAT50",img:"https://i.imgur.com/xH2l15W.jpeg"},
+   {id:523,cat:18,name:"TESERUFAT",desc:"TESERUFAT51",img:"https://i.imgur.com/H0wjjHU.jpeg"},
+   {id:524,cat:18,name:"TESERUFAT",desc:"TESERUFAT52",img:"https://i.imgur.com/icXDTQw.jpeg"},
+   {id:525,cat:18,name:"TESERUFAT",desc:"TESERUFAT53",img:"https://i.imgur.com/lF9unUl.jpeg"},
+   {id:526,cat:18,name:"TESERUFAT",desc:"TESERUFAT54",img:"https://i.imgur.com/7ukj6Sp.jpeg"},
+   {id:527,cat:18,name:"TESERUFAT",desc:"TESERUFAT55",img:"https://i.imgur.com/Oa86reH.jpeg"},
+   {id:528,cat:18,name:"TESERUFAT",desc:"TESERUFAT56",img:"https://i.imgur.com/t6wKjyE.jpeg"},
+   {id:529,cat:18,name:"TESERUFAT",desc:"TESERUFAT57",img:"https://i.imgur.com/yzDC9G9.jpeg"},
+   {id:530,cat:18,name:"TESERUFAT",desc:"TESERUFAT58",img:"https://i.imgur.com/agnusCG.jpeg"},
+   {id:531,cat:18,name:"TESERUFAT",desc:"TESERUFAT59",img:"https://i.imgur.com/HkO2RBp.jpeg"},
+   {id:532,cat:18,name:"TESERUFAT",desc:"TESERUFAT60",img:"https://i.imgur.com/xcP2MoU.jpeg"},
+   {id:533,cat:18,name:"TESERUFAT",desc:"TESERUFAT61",img:"https://i.imgur.com/1LcPUAt.jpeg"},
+   {id:534,cat:18,name:"TESERUFAT",desc:"TESERUFAT62",img:"https://i.imgur.com/19MMUSM.jpeg"},
+   {id:535,cat:18,name:"TESERUFAT",desc:"TESERUFAT63",img:"https://i.imgur.com/zH0X8RL.jpeg"},
+   {id:536,cat:18,name:"TESERUFAT",desc:"TESERUFAT64",img:"https://i.imgur.com/rT2RFxb.jpeg"},
+   {id:537,cat:18,name:"TESERUFAT",desc:"TESERUFAT65",img:"https://i.imgur.com/NzZWeP2.jpeg"},
+   {id:538,cat:18,name:"TESERUFAT",desc:"TESERUFAT66",img:"https://i.imgur.com/GYFJdYA.jpeg"},
+   {id:539,cat:18,name:"TESERUFAT",desc:"TESERUFAT67",img:"https://i.imgur.com/NiBqL05.jpeg"},
+   {id:540,cat:18,name:"TESERUFAT",desc:"TESERUFAT68",img:"https://i.imgur.com/3WIpvDX.jpeg"},
+   {id:541,cat:18,name:"TESERUFAT",desc:"TESERUFAT69",img:"https://i.imgur.com/ofz455e.jpeg"},
+   {id:542,cat:18,name:"TESERUFAT",desc:"TESERUFAT70",img:"https://i.imgur.com/zkyKQXi.jpeg"},
+   {id:543,cat:18,name:"TESERUFAT",desc:"TESERUFAT71",img:"https://i.imgur.com/XcgfKL8.jpeg"},
+   {id:544,cat:18,name:"TESERUFAT",desc:"TESERUFAT72",img:"https://i.imgur.com/q7Uuzws.jpeg"},
+   {id:545,cat:18,name:"TESERUFAT",desc:"TESERUFAT73",img:"https://i.imgur.com/grqk8Bl.jpeg"},
+   {id:546,cat:18,name:"TESERUFAT",desc:"TESERUFAT74",img:"https://i.imgur.com/dkLu3Yh.jpeg"},
+   {id:547,cat:18,name:"TESERUFAT",desc:"TESERUFAT75",img:"https://i.imgur.com/kdzq5ZP.jpeg"},
+   {id:548,cat:18,name:"TESERUFAT",desc:"TESERUFAT76",img:"https://i.imgur.com/CLne7v0.jpeg"},
+   {id:549,cat:18,name:"TESERUFAT",desc:"TESERUFAT77",img:"https://i.imgur.com/rfE2FSa.jpeg"},
+   {id:550,cat:18,name:"TESERUFAT",desc:"TESERUFAT78",img:"https://i.imgur.com/wVB7qvh.jpeg"},
+   {id:551,cat:18,name:"TESERUFAT",desc:"TESERUFAT79",img:"https://i.imgur.com/XVT98HY.jpeg"},
+   {id:552,cat:18,name:"TESERUFAT",desc:"TESERUFAT80",img:"https://i.imgur.com/ekH2KK1.jpeg"},
+   {id:553,cat:18,name:"TESERUFAT",desc:"TESERUFAT81",img:"https://i.imgur.com/vleBDOG.jpeg"},
+   {id:554,cat:18,name:"TESERUFAT",desc:"TESERUFAT82",img:"https://i.imgur.com/iMGxGHc.jpeg"},
+   {id:555,cat:18,name:"TESERUFAT",desc:"TESERUFAT83",img:"https://i.imgur.com/lvMqtUn.jpeg"},
+   {id:556,cat:18,name:"TESERUFAT",desc:"TESERUFAT84",img:"https://i.imgur.com/ozFie2D.jpeg"},
+   {id:557,cat:18,name:"TESERUFAT",desc:"TESERUFAT85",img:"https://i.imgur.com/Y2AprEE.jpeg"},
+   {id:558,cat:18,name:"TESERUFAT",desc:"TESERUFAT86",img:"https://i.imgur.com/hHYIbb6.jpeg"},
+   {id:559,cat:18,name:"TESERUFAT",desc:"TESERUFAT87",img:"https://i.imgur.com/zscdZaD.jpeg"},
+   {id:560,cat:18,name:"TESERUFAT",desc:"TESERUFAT88",img:"https://i.imgur.com/jGZrqep.jpeg"},
+   {id:561,cat:18,name:"TESERUFAT",desc:"TESERUFAT89",img:"https://i.imgur.com/sTI3BD7.jpeg"},
+   {id:562,cat:18,name:"TESERUFAT",desc:"TESERUFAT90",img:"https://i.imgur.com/IFRW7Oy.jpeg"},
+   {id:563,cat:18,name:"TESERUFAT",desc:"TESERUFAT91",img:"https://i.imgur.com/nvwGa12.jpeg"},
+   {id:564,cat:18,name:"TESERUFAT",desc:"TESERUFAT92",img:"https://i.imgur.com/js8pH7P.jpeg"},
+   {id:565,cat:18,name:"TESERUFAT",desc:"TESERUFAT93",img:"https://i.imgur.com/T565rHI.jpeg"},
+   {id:566,cat:18,name:"TESERUFAT",desc:"TESERUFAT94",img:"https://i.imgur.com/ZqAqthO.jpeg"},
+   {id:567,cat:18,name:"TESERUFAT",desc:"TESERUFAT95",img:"https://i.imgur.com/6D9ieyq.jpeg"},
+   {id:568,cat:18,name:"TESERUFAT",desc:"TESERUFAT96",img:"https://i.imgur.com/AePu5LF.jpeg"},
+   {id:569,cat:18,name:"TESERUFAT",desc:"TESERUFAT97",img:"https://i.imgur.com/QIBF8nQ.jpeg"},
+   {id:570,cat:18,name:"TESERUFAT",desc:"TESERUFAT98",img:"https://i.imgur.com/J9G5SBo.jpeg"},
+   {id:571,cat:18,name:"TESERUFAT",desc:"TESERUFAT99",img:"https://i.imgur.com/cZO2yLq.jpeg"},
+   {id:572,cat:18,name:"TESERUFAT",desc:"TESERUFAT100",img:"https://i.imgur.com/JxBe9so.jpeg"},
+   {id:573,cat:18,name:"TESERUFAT",desc:"TESERUFAT101",img:"https://i.imgur.com/LTR8EJp.jpeg"},
+   {id:574,cat:18,name:"TESERUFAT",desc:"TESERUFAT102",img:"https://i.imgur.com/u7FGuLB.jpeg"},
+   {id:575,cat:18,name:"TESERUFAT",desc:"TESERUFAT103",img:"https://i.imgur.com/BLqrleE.jpeg"},
+   {id:576,cat:18,name:"TESERUFAT",desc:"TESERUFAT104",img:"https://i.imgur.com/PpLCXa6.jpeg"},
+   {id:577,cat:18,name:"TESERUFAT",desc:"TESERUFAT105",img:"https://i.imgur.com/xGit3KQ.jpeg"},
+   {id:578,cat:18,name:"TESERUFAT",desc:"TESERUFAT106",img:"https://i.imgur.com/VeBbSbb.jpeg"},
+   {id:579,cat:18,name:"TESERUFAT",desc:"TESERUFAT107",img:"https://i.imgur.com/3pQz8Eb.jpeg"},
+   {id:580,cat:18,name:"TESERUFAT",desc:"TESERUFAT108",img:"https://i.imgur.com/9aMXt15.jpeg"},
+   {id:581,cat:18,name:"TESERUFAT",desc:"TESERUFAT109",img:"https://i.imgur.com/m95OAgU.jpeg"},
+   {id:582,cat:18,name:"TESERUFAT",desc:"TESERUFAT110",img:"https://i.imgur.com/SJzZrbp.jpeg"},
+   {id:583,cat:18,name:"TESERUFAT",desc:"TESERUFAT111",img:"https://i.imgur.com/J3S2mo0.jpeg"},
+   {id:584,cat:18,name:"TESERUFAT",desc:"TESERUFAT112",img:"https://i.imgur.com/pxPOca6.jpeg"},
+   {id:585,cat:18,name:"TESERUFAT",desc:"TESERUFAT113",img:"https://i.imgur.com/Az9sQ6q.jpeg"},
+   {id:586,cat:18,name:"TESERUFAT",desc:"TESERUFAT114",img:"https://i.imgur.com/wenKWdD.jpeg"},
+   {id:587,cat:18,name:"TESERUFAT",desc:"TESERUFAT115",img:"https://i.imgur.com/8T0aHm6.jpeg"},
+   {id:588,cat:18,name:"TESERUFAT",desc:"TESERUFAT116",img:"https://i.imgur.com/zFbtTqT.jpeg"},
+   {id:589,cat:18,name:"TESERUFAT",desc:"TESERUFAT117",img:"https://i.imgur.com/4tomEeo.jpeg"},
+   {id:590,cat:18,name:"TESERUFAT",desc:"TESERUFAT118",img:"https://i.imgur.com/rXO3XAc.jpeg"},
+   {id:591,cat:18,name:"TESERUFAT",desc:"TESERUFAT119",img:"https://i.imgur.com/JmcKS1H.jpeg"},
+   {id:592,cat:18,name:"TESERUFAT",desc:"TESERUFAT120",img:"https://i.imgur.com/IdsWJix.jpeg"},
+   {id:593,cat:18,name:"TESERUFAT",desc:"TESERUFAT121",img:"https://i.imgur.com/qp6F5PV.jpeg"},
+   {id:594,cat:18,name:"TESERUFAT",desc:"TESERUFAT122",img:"https://i.imgur.com/ViORCp3.jpeg"},
+   {id:595,cat:18,name:"TESERUFAT",desc:"TESERUFAT123",img:"https://i.imgur.com/cCA31rx.jpeg"},
+   {id:596,cat:18,name:"TESERUFAT",desc:"TESERUFAT124",img:"https://i.imgur.com/8mpEgpy.jpeg"},
+   {id:597,cat:18,name:"TESERUFAT",desc:"TESERUFAT125",img:"https://i.imgur.com/178mk8l.jpeg"},
+   {id:598,cat:18,name:"TESERUFAT",desc:"TESERUFAT126",img:"https://i.imgur.com/2QMAJy8.jpeg"},
+   {id:599,cat:18,name:"TESERUFAT",desc:"TESERUFAT127",img:"https://i.imgur.com/HW7Q9lT.jpeg"},
+   {id:600,cat:18,name:"TESERUFAT",desc:"TESERUFAT128",img:"https://i.imgur.com/jJBCuaJ.jpeg"},
+   {id:601,cat:18,name:"TESERUFAT",desc:"TESERUFAT129",img:"https://i.imgur.com/vyhkoKU.jpeg"},
+   {id:602,cat:18,name:"TESERUFAT",desc:"TESERUFAT130",img:"https://i.imgur.com/vZCOwdG.jpeg"},
+   {id:603,cat:18,name:"TESERUFAT",desc:"TESERUFAT131",img:"https://i.imgur.com/ipz8fBD.jpeg"},
+   {id:604,cat:18,name:"TESERUFAT",desc:"TESERUFAT132",img:"https://i.imgur.com/imFhESj.jpeg"},
+   {id:605,cat:18,name:"TESERUFAT",desc:"TESERUFAT133",img:"https://i.imgur.com/KvUGdW9.jpeg"},
+   {id:606,cat:18,name:"TESERUFAT",desc:"TESERUFAT134",img:"https://i.imgur.com/tQGuo4T.jpeg"},
+   {id:607,cat:18,name:"TESERUFAT",desc:"TESERUFAT135",img:"https://i.imgur.com/TeFRWf1.jpeg"},
+   {id:608,cat:18,name:"TESERUFAT",desc:"TESERUFAT136",img:"https://i.imgur.com/w5kvDeP.jpeg"},
+   {id:609,cat:18,name:"TESERUFAT",desc:"TESERUFAT137",img:"https://i.imgur.com/VWV27Ar.jpeg"},
+   {id:610,cat:18,name:"TESERUFAT",desc:"TESERUFAT138",img:"https://i.imgur.com/N3hUwRE.jpeg"},
+   {id:611,cat:18,name:"TESERUFAT",desc:"TESERUFAT139",img:"https://i.imgur.com/DqaBmkF.jpeg"},
+   {id:612,cat:18,name:"TESERUFAT",desc:"TESERUFAT140",img:"https://i.imgur.com/HmIBJMY.jpeg"},
+   {id:613,cat:18,name:"TESERUFAT",desc:"TESERUFAT141",img:"https://i.imgur.com/agM7Oyq.jpeg"},
+   {id:614,cat:18,name:"TESERUFAT",desc:"TESERUFAT142",img:"https://i.imgur.com/FUotvL9.jpeg"},
+   {id:615,cat:18,name:"TESERUFAT",desc:"TESERUFAT143",img:"https://i.imgur.com/0T10x8B.jpeg"},
+   {id:616,cat:18,name:"TESERUFAT",desc:"TESERUFAT144",img:"https://i.imgur.com/VhgPYx0.jpeg"},
+   {id:617,cat:18,name:"TESERUFAT",desc:"TESERUFAT145",img:"https://i.imgur.com/7qvEL8y.jpeg"},
+   {id:618,cat:18,name:"TESERUFAT",desc:"TESERUFAT146",img:"https://i.imgur.com/Chyq9lg.jpeg"},
+   {id:619,cat:18,name:"TESERUFAT",desc:"TESERUFAT147",img:"https://i.imgur.com/HwJn05O.jpeg"},
+   {id:620,cat:18,name:"TESERUFAT",desc:"TESERUFAT148",img:"https://i.imgur.com/RStTuGd.jpeg"},
+   {id:621,cat:18,name:"TESERUFAT",desc:"TESERUFAT149",img:"https://i.imgur.com/YUCBGI0.jpeg"},
+   {id:622,cat:18,name:"TESERUFAT",desc:"TESERUFAT150",img:"https://i.imgur.com/TBF3i7n.jpeg"},
+   {id:623,cat:18,name:"TESERUFAT",desc:"TESERUFAT151",img:"https://i.imgur.com/DPi3QsN.jpeg"},
+   {id:624,cat:18,name:"TESERUFAT",desc:"TESERUFAT152",img:"https://i.imgur.com/yBpcLE3.jpeg"},
+   {id:625,cat:18,name:"TESERUFAT",desc:"TESERUFAT153",img:"https://i.imgur.com/cLN0ZyL.jpeg"},
+   {id:626,cat:18,name:"TESERUFAT",desc:"TESERUFAT154",img:"https://i.imgur.com/oUNVpGK.jpeg"},
+   {id:627,cat:18,name:"TESERUFAT",desc:"TESERUFAT155",img:"https://i.imgur.com/oeqZzBy.jpeg"},
+   {id:628,cat:18,name:"TESERUFAT",desc:"TESERUFAT156",img:"https://i.imgur.com/9zd1UUf.jpeg"},
+   {id:629,cat:18,name:"TESERUFAT",desc:"TESERUFAT157",img:"https://i.imgur.com/fSjuUBt.jpeg"},
+   {id:630,cat:18,name:"TESERUFAT",desc:"TESERUFAT158",img:"https://i.imgur.com/aWPg2cj.jpeg"},
+   {id:631,cat:18,name:"TESERUFAT",desc:"TESERUFAT159",img:"https://i.imgur.com/nrbrSzs.jpeg"},
+   {id:632,cat:18,name:"TESERUFAT",desc:"TESERUFAT160",img:"https://i.imgur.com/dbQ3MzZ.jpeg"},
+   {id:633,cat:18,name:"TESERUFAT",desc:"TESERUFAT161",img:"https://i.imgur.com/TtZ8zyb.jpeg"},
+   {id:634,cat:18,name:"TESERUFAT",desc:"TESERUFAT162",img:"https://i.imgur.com/dXRqoRn.jpeg"},
+   {id:635,cat:18,name:"TESERUFAT",desc:"TESERUFAT163",img:"https://i.imgur.com/mQdAhtG.jpeg"},
+   {id:636,cat:18,name:"TESERUFAT",desc:"TESERUFAT164",img:"https://i.imgur.com/8FjjofQ.jpeg"},
+   {id:637,cat:18,name:"TESERUFAT",desc:"TESERUFAT165",img:"https://i.imgur.com/SYW5RB2.jpeg"},
+   {id:638,cat:18,name:"TESERUFAT",desc:"TESERUFAT166",img:"https://i.imgur.com/Uv4hsYv.jpeg"},
+   {id:639,cat:18,name:"TESERUFAT",desc:"TESERUFAT167",img:"https://i.imgur.com/dYp4YyK.jpeg"},
+   {id:640,cat:18,name:"TESERUFAT",desc:"TESERUFAT168",img:"https://i.imgur.com/o54Nk0S.jpeg"},
+   {id:641,cat:18,name:"TESERUFAT",desc:"TESERUFAT169",img:"https://i.imgur.com/btv8v6C.jpeg"},
+   {id:642,cat:18,name:"TESERUFAT",desc:"TESERUFAT170",img:"https://i.imgur.com/Dfk7f7N.jpeg"},
+   {id:643,cat:18,name:"TESERUFAT",desc:"TESERUFAT171",img:"https://i.imgur.com/QkZVLpv.jpeg"},
+   {id:644,cat:18,name:"TESERUFAT",desc:"TESERUFAT172",img:"https://i.imgur.com/3NPcXRr.jpeg"},
+   {id:645,cat:18,name:"TESERUFAT",desc:"TESERUFAT173",img:"https://i.imgur.com/alHYj32.jpeg"},
+   {id:646,cat:18,name:"TESERUFAT",desc:"TESERUFAT174",img:"https://i.imgur.com/h8FwRzD.jpeg"},
+   {id:647,cat:18,name:"TESERUFAT",desc:"TESERUFAT175",img:"https://i.imgur.com/OppEcui.jpeg"},
+   {id:648,cat:18,name:"TESERUFAT",desc:"TESERUFAT176",img:"https://i.imgur.com/lMqXwZE.jpeg"},
+   {id:649,cat:18,name:"TESERUFAT",desc:"TESERUFAT177",img:"https://i.imgur.com/wgqj1Hz.jpeg"},
+   {id:650,cat:18,name:"TESERUFAT",desc:"TESERUFAT178",img:"https://i.imgur.com/GIX9hQ9.jpeg"},
+   {id:651,cat:18,name:"TESERUFAT",desc:"TESERUFAT179",img:"https://i.imgur.com/IAKYprl.jpeg"},
+   {id:652,cat:18,name:"TESERUFAT",desc:"TESERUFAT180",img:"https://i.imgur.com/UqivaJI.jpeg"},
+   {id:653,cat:18,name:"TESERUFAT",desc:"TESERUFAT181",img:"https://i.imgur.com/Vvh6VP0.jpeg"},
+   {id:654,cat:18,name:"TESERUFAT",desc:"TESERUFAT182",img:"https://i.imgur.com/1eSa9Pb.jpeg"},
+   {id:655,cat:18,name:"TESERUFAT",desc:"TESERUFAT183",img:"https://i.imgur.com/JxshILt.jpeg"},
+   {id:656,cat:18,name:"TESERUFAT",desc:"TESERUFAT184",img:"https://i.imgur.com/GsqmSOu.jpeg"},
+   {id:657,cat:18,name:"TESERUFAT",desc:"TESERUFAT185",img:"https://i.imgur.com/sX5meAM.jpeg"},
+   {id:658,cat:18,name:"TESERUFAT",desc:"TESERUFAT186",img:"https://i.imgur.com/WwfMwJM.jpeg"},
+   {id:659,cat:18,name:"TESERUFAT",desc:"TESERUFAT187",img:"https://i.imgur.com/UX4nheZ.jpeg"},
+   {id:660,cat:18,name:"TESERUFAT",desc:"TESERUFAT188",img:"https://i.imgur.com/HmlKYXO.jpeg"},
+   {id:661,cat:18,name:"TESERUFAT",desc:"TESERUFAT189",img:"https://i.imgur.com/4sBM3qX.jpeg"},
+   {id:662,cat:18,name:"TESERUFAT",desc:"TESERUFAT190",img:"https://i.imgur.com/sPX1g6G.jpeg"},
+   {id:663,cat:18,name:"TESERUFAT",desc:"TESERUFAT191",img:"https://i.imgur.com/NIy5deL.jpeg"},
+   {id:664,cat:18,name:"TESERUFAT",desc:"TESERUFAT192",img:"https://i.imgur.com/PK21mgP.jpeg"},
+   {id:665,cat:18,name:"TESERUFAT",desc:"TESERUFAT193",img:"https://i.imgur.com/YXi7WZo.jpeg"},
+   {id:666,cat:18,name:"TESERUFAT",desc:"TESERUFAT194",img:"https://i.imgur.com/xsFjQIT.jpeg"},
+   {id:667,cat:18,name:"TESERUFAT",desc:"TESERUFAT195",img:"https://i.imgur.com/lMWwYDS.jpeg"},
+   {id:668,cat:18,name:"TESERUFAT",desc:"TESERUFAT196",img:"https://i.imgur.com/UWcveGg.jpeg"},
+   {id:669,cat:18,name:"TESERUFAT",desc:"TESERUFAT197",img:"https://i.imgur.com/1RhF1z4.jpeg"},
+   {id:670,cat:18,name:"TESERUFAT",desc:"TESERUFAT198",img:"https://i.imgur.com/do5OJm6.jpeg"},
+   {id:671,cat:18,name:"TESERUFAT",desc:"TESERUFAT199",img:"https://i.imgur.com/V2nkoah.jpeg"},
+   {id:672,cat:18,name:"TESERUFAT",desc:"TESERUFAT200",img:"https://i.imgur.com/yUCbRAp.jpeg"},
+   {id:673,cat:18,name:"TESERUFAT",desc:"TESERUFAT201",img:"https://i.imgur.com/YFFq13w.jpeg"},
+   {id:674,cat:18,name:"TESERUFAT",desc:"TESERUFAT202",img:"https://i.imgur.com/NhaIagf.jpeg"},
+   {id:675,cat:18,name:"TESERUFAT",desc:"TESERUFAT203",img:"https://i.imgur.com/wgCVV0o.jpeg"},
+   {id:676,cat:18,name:"TESERUFAT",desc:"TESERUFAT204",img:"https://i.imgur.com/TkVtVcb.jpeg"},
+   {id:677,cat:18,name:"TESERUFAT",desc:"TESERUFAT205",img:"https://i.imgur.com/XNj4RkQ.jpeg"},
+   {id:678,cat:18,name:"TESERUFAT",desc:"TESERUFAT206",img:"https://i.imgur.com/yF9Xk2N.jpeg"},
+   {id:679,cat:18,name:"TESERUFAT",desc:"TESERUFAT207",img:"https://i.imgur.com/v5G0wZx.jpeg"},
+   {id:680,cat:18,name:"TESERUFAT",desc:"TESERUFAT208",img:"https://i.imgur.com/XmlqqD8.jpeg"},
+   {id:681,cat:18,name:"TESERUFAT",desc:"TESERUFAT209",img:"https://i.imgur.com/D44oA4s.jpeg"},
+   {id:682,cat:18,name:"TESERUFAT",desc:"TESERUFAT210",img:"https://i.imgur.com/3XaNLst.jpeg"},
+   {id:683,cat:18,name:"TESERUFAT",desc:"TESERUFAT211",img:"https://i.imgur.com/3itMBm7.jpeg"},
+   {id:684,cat:18,name:"TESERUFAT",desc:"TESERUFAT212",img:"https://i.imgur.com/U1cUxDg.jpeg"},
+   {id:685,cat:18,name:"TESERUFAT",desc:"TESERUFAT213",img:"https://i.imgur.com/0fn3ztV.jpeg"},
+   {id:686,cat:18,name:"TESERUFAT",desc:"TESERUFAT214",img:"https://i.imgur.com/NPEFzGg.jpeg"},
+   {id:687,cat:18,name:"TESERUFAT",desc:"TESERUFAT215",img:"https://i.imgur.com/LXAglIj.jpeg"},
+   {id:688,cat:18,name:"TESERUFAT",desc:"TESERUFAT216",img:"https://i.imgur.com/eh3wtRf.jpeg"},
+   {id:689,cat:18,name:"TESERUFAT",desc:"TESERUFAT217",img:"https://i.imgur.com/lGfiEim.jpeg"},
+   {id:690,cat:18,name:"TESERUFAT",desc:"TESERUFAT218",img:"https://i.imgur.com/ltY8J7L.jpeg"},
+   {id:691,cat:18,name:"TESERUFAT",desc:"TESERUFAT219",img:"https://i.imgur.com/eij7qQd.jpeg"},
+   {id:692,cat:18,name:"TESERUFAT",desc:"TESERUFAT220",img:"https://i.imgur.com/7KnQFzd.jpeg"},
+   {id:693,cat:18,name:"TESERUFAT",desc:"TESERUFAT221",img:"https://i.imgur.com/x7A4n0v.jpeg"},
+   {id:694,cat:18,name:"TESERUFAT",desc:"TESERUFAT222",img:"https://i.imgur.com/ELtPBYK.jpeg"},
+   {id:695,cat:18,name:"TESERUFAT",desc:"TESERUFAT223",img:"https://i.imgur.com/XsjWuMx.jpeg"},
+   {id:696,cat:18,name:"TESERUFAT",desc:"TESERUFAT224",img:"https://i.imgur.com/3v51VbK.jpeg"},
+   {id:697,cat:18,name:"TESERUFAT",desc:"TESERUFAT225",img:"https://i.imgur.com/fUkkn5C.jpeg"},
+   {id:698,cat:18,name:"TESERUFAT",desc:"TESERUFAT226",img:"https://i.imgur.com/EWioAmq.jpeg"},
+   {id:699,cat:18,name:"TESERUFAT",desc:"TESERUFAT227",img:"https://i.imgur.com/Tx11X4M.jpeg"},
+   {id:700,cat:18,name:"TESERUFAT",desc:"TESERUFAT228",img:"https://i.imgur.com/ysu2CYB.jpeg"},
+   {id:701,cat:18,name:"TESERUFAT",desc:"TESERUFAT229",img:"https://i.imgur.com/YVIOqvM.jpeg"},
+   {id:702,cat:18,name:"TESERUFAT",desc:"TESERUFAT230",img:"https://i.imgur.com/1P3SYoq.jpeg"},
+   {id:703,cat:18,name:"TESERUFAT",desc:"TESERUFAT231",img:"https://i.imgur.com/mmDKqNn.jpeg"},
+   {id:704,cat:18,name:"TESERUFAT",desc:"TESERUFAT232",img:"https://i.imgur.com/7DLEz28.jpeg"},
+   {id:705,cat:18,name:"TESERUFAT",desc:"TESERUFAT233",img:"https://i.imgur.com/Qj3xJ4S.jpeg"},
+   {id:706,cat:18,name:"TESERUFAT",desc:"TESERUFAT234",img:"https://i.imgur.com/utNqUXj.jpeg"},
+   {id:707,cat:18,name:"TESERUFAT",desc:"TESERUFAT235",img:"https://i.imgur.com/dY6BHbW.jpeg"},
+   {id:708,cat:18,name:"TESERUFAT",desc:"TESERUFAT236",img:"https://i.imgur.com/3jYzqi4.jpeg"},
+   {id:709,cat:18,name:"TESERUFAT",desc:"TESERUFAT237",img:"https://i.imgur.com/P3PP0SX.jpeg"},
+   {id:710,cat:18,name:"TESERUFAT",desc:"TESERUFAT238",img:"https://i.imgur.com/IvtoYZx.jpeg"},
+   {id:711,cat:18,name:"TESERUFAT",desc:"TESERUFAT239",img:"https://i.imgur.com/7Tkoylw.jpeg"},
+   {id:712,cat:18,name:"TESERUFAT",desc:"TESERUFAT240",img:"https://i.imgur.com/bDJRjFo.jpeg"},
+   {id:713,cat:18,name:"TESERUFAT",desc:"TESERUFAT241",img:"https://i.imgur.com/gcysSfc.jpeg"},
+   {id:714,cat:18,name:"TESERUFAT",desc:"TESERUFAT242",img:"https://i.imgur.com/KUiFVpY.jpeg"},
+   {id:715,cat:18,name:"TESERUFAT",desc:"TESERUFAT243",img:"https://i.imgur.com/WhGcEaC.jpeg"},
+   {id:716,cat:18,name:"TESERUFAT",desc:"TESERUFAT244",img:"https://i.imgur.com/eaMQHmi.jpeg"},
+   {id:717,cat:18,name:"TESERUFAT",desc:"TESERUFAT245",img:"https://i.imgur.com/UAaD3Hn.jpeg"},
+   {id:718,cat:18,name:"TESERUFAT",desc:"TESERUFAT246",img:"https://i.imgur.com/L5D1Lq1.jpeg"},
+   {id:719,cat:18,name:"TESERUFAT",desc:"TESERUFAT247",img:"https://i.imgur.com/szdwUI4.jpeg"},
+   {id:720,cat:18,name:"TESERUFAT",desc:"TESERUFAT248",img:"https://i.imgur.com/fSJJqmF.jpeg"},
+   {id:721,cat:18,name:"TESERUFAT",desc:"TESERUFAT249",img:"https://i.imgur.com/90VRBpW.jpeg"},
+   {id:722,cat:18,name:"TESERUFAT",desc:"TESERUFAT250",img:"https://i.imgur.com/LKko9Ok.jpeg"},
+   {id:723,cat:18,name:"TESERUFAT",desc:"TESERUFAT251",img:"https://i.imgur.com/IFXYoBR.jpeg"},
+   {id:724,cat:18,name:"TESERUFAT",desc:"TESERUFAT252",img:"https://i.imgur.com/3yVBouA.jpeg"},
+   {id:725,cat:18,name:"TESERUFAT",desc:"TESERUFAT253",img:"https://i.imgur.com/Q2yZa7D.jpeg"},
+   {id:726,cat:18,name:"TESERUFAT",desc:"TESERUFAT254",img:"https://i.imgur.com/elHJBuc.jpeg"},
+   {id:727,cat:18,name:"TESERUFAT",desc:"TESERUFAT255",img:"https://i.imgur.com/8GMyXp9.jpeg"},
+   {id:728,cat:18,name:"TESERUFAT",desc:"TESERUFAT256",img:"https://i.imgur.com/36VNtui.jpeg"},
+   {id:729,cat:18,name:"TESERUFAT",desc:"TESERUFAT257",img:"https://i.imgur.com/lBdMGEZ.jpeg"},
+   {id:730,cat:18,name:"TESERUFAT",desc:"TESERUFAT258",img:"https://i.imgur.com/vw7fAjQ.jpeg"},
+   {id:731,cat:18,name:"TESERUFAT",desc:"TESERUFAT259",img:"https://i.imgur.com/BDWog2R.jpeg"},
+   {id:732,cat:18,name:"TESERUFAT",desc:"TESERUFAT260",img:"https://i.imgur.com/367W9Ey.jpeg"},
+   {id:733,cat:18,name:"TESERUFAT",desc:"TESERUFAT261",img:"https://i.imgur.com/rXSPNgX.jpeg"},
+   {id:734,cat:18,name:"TESERUFAT",desc:"TESERUFAT262",img:"https://i.imgur.com/CV5YXZq.jpeg"},
+   {id:735,cat:18,name:"TESERUFAT",desc:"TESERUFAT263",img:"https://i.imgur.com/QhuQhRJ.jpeg"},
+   {id:736,cat:18,name:"TESERUFAT",desc:"TESERUFAT264",img:"https://i.imgur.com/Zvuy3j5.jpeg"},
+   {id:737,cat:18,name:"TESERUFAT",desc:"TESERUFAT265",img:"https://i.imgur.com/F3IFjeL.jpeg"},
+   {id:738,cat:18,name:"TESERUFAT",desc:"TESERUFAT266",img:"https://i.imgur.com/5wmWmgQ.jpeg"},
+   {id:739,cat:18,name:"TESERUFAT",desc:"TESERUFAT267",img:"https://i.imgur.com/QE1ogkD.jpeg"},
+   {id:740,cat:18,name:"TESERUFAT",desc:"TESERUFAT268",img:"https://i.imgur.com/eAhcQYg.jpeg"},
+   {id:741,cat:18,name:"TESERUFAT",desc:"TESERUFAT269",img:"https://i.imgur.com/zzBnsmZ.jpeg"},
+   {id:742,cat:18,name:"TESERUFAT",desc:"TESERUFAT270",img:"https://i.imgur.com/itxm2kP.jpeg"},
+   {id:743,cat:18,name:"TESERUFAT",desc:"TESERUFAT271",img:"https://i.imgur.com/9QNZ26k.jpeg"},
+   {id:744,cat:18,name:"TESERUFAT",desc:"TESERUFAT272",img:"https://i.imgur.com/nJlu6AE.jpeg"},
+   {id:745,cat:18,name:"TESERUFAT",desc:"TESERUFAT273",img:"https://i.imgur.com/TRAKH1Q.jpeg"},
+   {id:746,cat:18,name:"TESERUFAT",desc:"TESERUFAT274",img:"https://i.imgur.com/DigqShB.jpeg"},
+   {id:747,cat:18,name:"TESERUFAT",desc:"TESERUFAT275",img:"https://i.imgur.com/XVVjoYD.jpeg"},
+   {id:748,cat:18,name:"TESERUFAT",desc:"TESERUFAT276",img:"https://i.imgur.com/XrNLKB6.jpeg"},
+   {id:749,cat:18,name:"TESERUFAT",desc:"TESERUFAT277",img:"https://i.imgur.com/XWrDAWT.jpeg"},
+   {id:750,cat:18,name:"TESERUFAT",desc:"TESERUFAT278",img:"https://i.imgur.com/cC5rV2G.jpeg"},
+   {id:751,cat:18,name:"TESERUFAT",desc:"TESERUFAT279",img:"https://i.imgur.com/3XGXL6b.jpeg"},
+   {id:752,cat:18,name:"TESERUFAT",desc:"TESERUFAT280",img:"https://i.imgur.com/xlNf10U.jpeg"},
+   {id:753,cat:18,name:"TESERUFAT",desc:"TESERUFAT281",img:"https://i.imgur.com/ZpSDNxY.jpeg"},
+   {id:754,cat:18,name:"TESERUFAT",desc:"TESERUFAT282",img:"https://i.imgur.com/JfXqa8j.jpeg"},
+   {id:755,cat:18,name:"TESERUFAT",desc:"TESERUFAT283",img:"https://i.imgur.com/ujKF63y.jpeg"},
+   {id:756,cat:18,name:"TESERUFAT",desc:"TESERUFAT284",img:"https://i.imgur.com/2imQvG2.jpeg"},
+   {id:757,cat:18,name:"TESERUFAT",desc:"TESERUFAT285",img:"https://i.imgur.com/FzpYzVt.jpeg"},
+   {id:763,cat:18,name:"TESERUFAT",desc:"TESERUFAT286",img:"https://i.imgur.com/4Qtvmt6.jpeg"},
+   {id:764,cat:18,name:"TESERUFAT",desc:"TESERUFAT287",img:"https://i.imgur.com/xqY1hNs.jpeg"}
+];
+
+const defaultCategories = {
+  0:"HAMISI",
+  5:"ACARLAR",
+  6: "BOLT",
+  7: "DASHLAR",
+  8: "ELECTRIC",
+  9: "KATOK/SHOTKU",
+  10: "LAPATKA/CEKIC",
+  11: "MISMAR",
+  12: "SANTEXNIK",
+  13: "SILIKON MAYE",
+  14: "SVERLO",
+  15: "SURUP",
+  16: "VANNA/VEDRA",
+  17: "ZAMOK",
+  18: "TESERUFAT"
+};
+
+// ==================== VARIABLES ====================
+let products = [];
+let catNames = {};
+let currentCategory = 0;
+let currentSearch = "";
+let filteredProducts = [];
+let currentPage = 0;
+let isLoading = false;
+let searchTimeout;
+let adminLoggedIn = false;
+let productToDelete = null;
+let editingProductId = null;
+let adminCurrentCategory = 0;
+let expandedProductId = null;
+
+const ITEMS_PER_PAGE = 15;
+const DELETE_CODE = "4963";
+
+// ==================== INIT ====================
+function init() {
+  const savedProducts = localStorage.getItem('ef_products');
+  const savedCategories = localStorage.getItem('ef_categories');
+
+  if (savedProducts) {
+    products = JSON.parse(savedProducts);
+  } else {
+    products = [...defaultProducts];
+    saveData();
+  }
+
+  if (savedCategories) {
+    catNames = JSON.parse(savedCategories);
+  } else {
+    catNames = {...defaultCategories};
+    saveData();
+  }
+}
+
+function saveData() {
+  localStorage.setItem('ef_products', JSON.stringify(products));
+  localStorage.setItem('ef_categories', JSON.stringify(catNames));
+}
+
+// ==================== CATALOG ====================
+function openCatalog() {
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("catalog").classList.add("active");
+  document.getElementById("backBtn").classList.remove("hidden");
+  renderCategories();
+  filterAndRender();
+  setupInfiniteScroll();
+}
+
+function goBack() {
+  document.getElementById("searchInput").value = "";
+  currentCategory = 0;
+  currentSearch = "";
+  currentPage = 0;
+  expandedProductId = null;
+  filteredProducts = [];
+  document.getElementById("catalog").classList.remove("active");
+  document.getElementById("home").classList.remove("hidden");
+  document.getElementById("backBtn").classList.add("hidden");
+  document.getElementById("products").innerHTML = "";
+}
+
+function renderCategories() {
+  const box = document.getElementById("catList");
+  box.innerHTML = "";
+  Object.keys(catNames).forEach(catId => {
+    const count = catId == 0 ? products.length : products.filter(p => p.cat == catId).length;
+    const btn = document.createElement("button");
+    if (parseInt(catId) === currentCategory) btn.className = "active";
+    btn.textContent = `${catNames[catId]} (${count})`;
+    btn.onclick = () => {
+      currentCategory = parseInt(catId);
+      currentPage = 0;
+      expandedProductId = null;
+      renderCategories();
+      filterAndRender();
+    };
+    box.appendChild(btn);
+  });
+}
+
+function scrollCategories(direction) {
+  document.getElementById("catList").scrollBy({ left: direction * 200, behavior: 'smooth' });
+}
+
+function filterProducts() {
+  filteredProducts = products.filter(p => {
+    const matchCat = currentCategory == 0 || p.cat == currentCategory;
+    const matchSearch = !currentSearch || p.name.toLowerCase().includes(currentSearch.toLowerCase()) || p.desc.toLowerCase().includes(currentSearch.toLowerCase());
+    return matchCat && matchSearch;
+  });
+}
+
+function filterAndRender() {
+  filterProducts();
+  document.getElementById("products").innerHTML = "";
+  currentPage = 0;
+  renderNextBatch();
+}
+
+function renderNextBatch() {
+  if (isLoading) return;
+  isLoading = true;
+  const start = currentPage * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  const batch = filteredProducts.slice(start, end);
+  
+  if (batch.length === 0) {
+    isLoading = false;
+    document.getElementById("loadingTrigger").classList.add("hidden");
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  batch.forEach((p, index) => {
+    fragment.appendChild(createProductElement(p, start + index));
+  });
+  
+  document.getElementById("products").appendChild(fragment);
+  currentPage++;
+  isLoading = false;
+  
+  if (currentPage * ITEMS_PER_PAGE >= filteredProducts.length) {
+    document.getElementById("loadingTrigger").classList.add("hidden");
+  } else {
+    document.getElementById("loadingTrigger").classList.remove("hidden");
+  }
+}
+
+function createProductElement(p, index) {
+  const div = document.createElement("div");
+  div.className = "product";
+  div.dataset.id = p.id;
+  
+  // Восстанавливаем expanded состояние если нужно
+  if (expandedProductId === p.id) {
+    div.classList.add("expanded");
+  }
+  
+  div.style.animationDelay = `${(index % ITEMS_PER_PAGE) * 0.03}s`;
+  div.innerHTML = `
+    <img class="product-image" src="${p.img}" alt="${p.name}" loading="lazy">
+    <div class="product-info">
+      <div class="product-name">${p.name}</div>
+      <div class="product-desc">${p.desc}</div>
+    </div>
+  `;
+  
+  div.addEventListener('click', function(e) {
+    // Если клик по фото и карточка уже expanded → открываем модалку
+    if (e.target.classList.contains('product-image') && this.classList.contains('expanded')) {
+      zoomImage(p.img);
+      return;
+    }
+    
+    // Если клик по фото, но карточка не expanded → ничего не делаем (или можно expand)
+    if (e.target.classList.contains('product-image') && !this.classList.contains('expanded')) {
+      // Сначала делаем expand
+      expandProduct(this, p.id);
+      return;
+    }
+    
+    // Обычный клик по карточке → toggle expand
+    if (this.classList.contains('expanded')) {
+      // Свернуть
+      this.classList.remove("expanded");
+      expandedProductId = null;
+    } else {
+      // Развернуть (сначала сворачиваем другие)
+      expandProduct(this, p.id);
+    }
+  });
+  
+  return div;
+}
+
+function expandProduct(element, id) {
+  // Свернуть все остальные
+  document.querySelectorAll('.product.expanded').forEach(el => {
+    el.classList.remove("expanded");
+  });
+  
+  // Развернуть текущую
+  element.classList.add("expanded");
+  expandedProductId = id;
+  
+  // Прокрутить к элементу
+  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentSearch = document.getElementById("searchInput").value;
+    currentPage = 0;
+    expandedProductId = null;
+    filterAndRender();
+  }, 300);
+}
+
+function setupInfiniteScroll() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !isLoading) renderNextBatch();
+    });
+  }, { rootMargin: "50px", threshold: 0 });
+  observer.observe(document.getElementById("loadingTrigger"));
+}
+
+function zoomImage(src) {
+  document.getElementById("modalImg").src = src;
+  document.getElementById("imageModal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  document.getElementById("imageModal").classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+// ==================== ADMIN ====================
+function openAdmin() {
+  document.getElementById("adminModal").classList.add("active");
+  document.body.style.overflow = "hidden";
+  if (!adminLoggedIn) showLogin();
+  else showAdminDashboard();
+}
+
+function closeAdmin() {
+  document.getElementById("adminModal").classList.remove("active");
+  document.body.style.overflow = "";
+  productToDelete = null;
+  editingProductId = null;
+}
+
+function showLogin() {
+  document.getElementById("adminBody").innerHTML = `
+    <div class="login-form">
+      <h3>🔐 Admin Girişi</h3>
+      <input type="text" id="loginUser" placeholder="İstifadəçi adı">
+      <input type="password" id="loginPass" placeholder="Şifrə">
+      <button onclick="checkLogin()">Daxil ol</button>
+      <div id="loginError" style="color: #e74c3c; margin-top: 10px; display: none;">Yanlış giriş məlumatları!</div>
+    </div>
+  `;
+}
+
+function checkLogin() {
+  const user = document.getElementById("loginUser").value;
+  const pass = document.getElementById("loginPass").value;
+  if (user === "efracks2026" && pass === "0553734963") {
+    adminLoggedIn = true;
+    showAdminDashboard();
+  } else {
+    document.getElementById("loginError").style.display = "block";
+  }
+}
+
+function logoutAdmin() {
+  adminLoggedIn = false;
+  closeAdmin();
+}
+
+function showAdminDashboard() {
+  document.getElementById("adminBody").innerHTML = `
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('products')">Məhsullar</button>
+      <button class="admin-tab" onclick="switchTab('categories')">Kateqoriyalar</button>
+      <button class="admin-tab" onclick="logoutAdmin()">Çıxış</button>
+    </div>
+    <div id="adminContent"></div>
+  `;
+  renderAdminProducts();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  if (tab === 'products') renderAdminProducts();
+  else renderAdminCategories();
+}
+
+function renderAdminProducts() {
+  let filterOptions = '<option value="0">Bütün kateqoriyalar</option>';
+  Object.keys(catNames).forEach(catId => {
+    if (catId != 0) {
+      filterOptions += `<option value="${catId}" ${adminCurrentCategory == catId ? 'selected' : ''}>${catNames[catId]}</option>`;
+    }
+  });
+
+  let html = `
+    <div class="admin-filter">
+      <label>Kateqoriya üzrə filtr:</label>
+      <select onchange="filterAdminProducts(this.value)">${filterOptions}</select>
+    </div>
+    <button class="admin-add-btn" onclick="openProductEdit()">+ Yeni məhsul əlavə et</button>
+    <div class="admin-list">
+  `;
+
+  const filtered = adminCurrentCategory == 0 ? products : products.filter(p => p.cat == adminCurrentCategory);
+  
+  filtered.forEach(p => {
+    html += `
+      <div class="admin-item">
+        <img class="admin-item-image" src="${p.img}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/60'">
+        <div class="admin-item-info">
+          <div class="admin-item-name">${p.name}</div>
+          <div class="admin-item-cat">${catNames[p.cat] || 'Kateqoriyasız'}</div>
+          <div class="admin-item-desc">${p.desc || 'Təsvir yoxdur'}</div>
+        </div>
+        <div class="admin-item-actions">
+          <button class="admin-btn admin-btn-edit" onclick="openProductEdit(${p.id})">Düzəliş</button>
+          <button class="admin-btn admin-btn-delete" onclick="requestDeleteProduct(${p.id})">Sil</button>
+        </div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  document.getElementById("adminContent").innerHTML = html;
+}
+
+function filterAdminProducts(catId) {
+  adminCurrentCategory = parseInt(catId);
+  renderAdminProducts();
+}
+
+function requestDeleteProduct(id) {
+  productToDelete = id;
+  document.getElementById("deleteCodeModal").classList.add("active");
+  document.getElementById("deleteCodeInput").value = "";
+  document.getElementById("deleteCodeInput").focus();
+}
+
+function cancelDelete() {
+  document.getElementById("deleteCodeModal").classList.remove("active");
+  productToDelete = null;
+}
+
+function confirmDelete() {
+  if (document.getElementById("deleteCodeInput").value === DELETE_CODE) {
+    if (productToDelete) {
+      products = products.filter(p => p.id !== productToDelete);
+      saveData();
+      renderAdminProducts();
+      cancelDelete();
+    }
+  } else {
+    alert("Yanlış kod!");
+    cancelDelete();
+  }
+}
+
+function openProductEdit(id = null) {
+  editingProductId = id;
+  const product = id ? products.find(p => p.id === id) : null;
+  let catOptions = '';
+  Object.keys(catNames).forEach(catId => {
+    if (catId != 0) {
+      catOptions += `<option value="${catId}" ${product && product.cat == catId ? 'selected' : ''}>${catNames[catId]}</option>`;
+    }
+  });
+
+  document.getElementById("adminContent").innerHTML = `
+    <div class="admin-edit-form">
+      <h4>${product ? '✏️ Məhsulu düzəliş et' : '➕ Yeni məhsul əlavə et'}</h4>
+      <label>Məhsul adı:</label>
+      <input type="text" id="editName" value="${product ? product.name : ''}" placeholder="Məsələn: SHESTIQRANNIK">
+      <label>Kateqoriya:</label>
+      <select id="editCat">${catOptions}</select>
+      <label>Təsvir:</label>
+      <textarea id="editDesc" placeholder="Məsələn: BALACA / ORTA / YEKE">${product ? product.desc : ''}</textarea>
+      <label>Şəkil URL:</label>
+      <input type="text" id="editImg" value="${product ? product.img : ''}" placeholder="https://i.imgur.com/...">
+      <div class="admin-edit-actions">
+        <button class="admin-btn admin-btn-cancel" onclick="renderAdminProducts()">Ləğv et</button>
+        <button class="admin-btn admin-btn-save" onclick="saveProduct()">Saxla</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveProduct() {
+  const name = document.getElementById("editName").value.trim();
+  const cat = parseInt(document.getElementById("editCat").value);
+  const desc = document.getElementById("editDesc").value.trim();
+  const img = document.getElementById("editImg").value.trim();
+
+  if (!name) { alert("Məhsul adı daxil edin!"); return; }
+  if (!cat) { alert("Kateqoriya seçin!"); return; }
+
+  if (editingProductId) {
+    const index = products.findIndex(p => p.id === editingProductId);
+    if (index !== -1) {
+      products[index] = { id: editingProductId, cat, name, desc, img: img || "https://via.placeholder.com/150" };
+    }
+  } else {
+    const newId = Math.max(...products.map(p => p.id), 0) + 1;
+    products.push({ id: newId, cat, name, desc, img: img || "https://via.placeholder.com/150" });
+  }
+
+  saveData();
+  renderAdminProducts();
+}
+
+function renderAdminCategories() {
+  let html = `
+    <div class="admin-edit-form">
+      <h4>➕ Yeni kateqoriya əlavə et</h4>
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <input type="text" id="newCatName" placeholder="Kateqoriya adı" style="flex: 1;">
+        <button class="admin-btn admin-btn-save" onclick="addCategory()">Əlavə et</button>
+      </div>
+    </div>
+    <div class="cat-manager">
+  `;
+
+  Object.keys(catNames).forEach(catId => {
+    if (catId != 0) {
+      html += `
+        <div class="cat-item">
+          <input type="text" value="${catNames[catId]}" onchange="updateCategory(${catId}, this.value)">
+          <button class="admin-btn admin-btn-delete" onclick="deleteCategory(${catId})" style="margin-left: 10px;">Sil</button>
+        </div>
+      `;
+    }
+  });
+
+  html += '</div>';
+  document.getElementById("adminContent").innerHTML = html;
+}
+
+function addCategory() {
+  const name = document.getElementById("newCatName").value.trim();
+  if (!name) { alert("Kateqoriya adı daxil edin!"); return; }
+  const newId = Math.max(...Object.keys(catNames).map(Number), 0) + 1;
+  catNames[newId] = name;
+  saveData();
+  renderAdminCategories();
+}
+
+function updateCategory(id, newName) {
+  if (!newName.trim()) { alert("Kateqoriya adı boş ola bilməz!"); return; }
+  catNames[id] = newName.trim();
+  saveData();
+}
+
+function deleteCategory(id) {
+  if (confirm("Bu kateqoriyanı silmək istədiyinizə əminsiniz?")) {
+    delete catNames[id];
+    saveData();
+    renderAdminCategories();
+  }
+}
+
+// Keyboard
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeModal();
+    if (document.getElementById("adminModal").classList.contains('active')) closeAdmin();
+  }
+});
+
+// Start
+init();
+</script>
+</body>
+</html>
